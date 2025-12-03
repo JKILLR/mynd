@@ -25,7 +25,7 @@
         
         /* ─── Design Tokens ─── */
         :root {
-            /* Natural Palette */
+            /* Natural Palette - Light */
             --milk: #F9F7F0;
             --milk-warm: #F5F2E8;
             --light-stone: #D8D2C2;
@@ -99,6 +99,34 @@
             --z-toast: 300;
         }
         
+        /* ─── Dark Mode ─── */
+        [data-theme="dark"] {
+            --milk: #1a1a1a;
+            --milk-warm: #222222;
+            --light-stone: #3a3a3a;
+            --stone: #5a5a5a;
+            --graphite: #e8e8e8;
+            --graphite-light: #b0b0b0;
+            --charcoal: #f0f0f0;
+            
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #222222;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #e8e8e8;
+            --text-secondary: #b0b0b0;
+            --text-muted: #6a6a6a;
+            
+            --surface-glass: rgba(30, 30, 30, 0.85);
+            --surface-card: rgba(40, 40, 40, 0.8);
+            --border-light: rgba(255, 255, 255, 0.08);
+            --border-medium: rgba(255, 255, 255, 0.12);
+            
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.2);
+            --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.4), 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
         /* ─── CSS Reset & Base ─── */
         *, *::before, *::after {
             margin: 0;
@@ -119,6 +147,7 @@
             overflow: hidden;
             min-height: 100vh;
             min-height: 100dvh;
+            transition: background var(--duration-normal), color var(--duration-normal);
         }
         
         button {
@@ -146,7 +175,16 @@
                 radial-gradient(ellipse at 30% 20%, rgba(177, 116, 87, 0.03) 0%, transparent 50%),
                 radial-gradient(ellipse at 70% 80%, rgba(138, 154, 123, 0.04) 0%, transparent 50%),
                 radial-gradient(ellipse at 50% 50%, rgba(212, 196, 168, 0.05) 0%, transparent 70%),
-                linear-gradient(180deg, var(--milk) 0%, var(--milk-warm) 100%);
+                linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            transition: background var(--duration-normal);
+        }
+        
+        [data-theme="dark"] #background {
+            background: 
+                radial-gradient(ellipse at 30% 20%, rgba(177, 116, 87, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(138, 154, 123, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(100, 100, 120, 0.08) 0%, transparent 70%),
+                linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
         }
         
         /* Subtle grain texture */
@@ -191,6 +229,12 @@
             font-size: 18px;
             color: var(--milk);
             box-shadow: var(--shadow-md);
+            transition: background var(--duration-normal);
+        }
+        
+        [data-theme="dark"] .brand-logo {
+            background: var(--desert-clay);
+            color: white;
         }
         
         .brand-text h1 {
@@ -297,6 +341,11 @@
             background: var(--bg-secondary);
         }
         
+        .search-result-icon {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
         .search-result-dot {
             width: 10px;
             height: 10px;
@@ -346,7 +395,7 @@
         }
         
         .control-btn:hover {
-            background: white;
+            background: var(--bg-tertiary);
             border-color: var(--border-medium);
             color: var(--text-primary);
             transform: translateX(-2px);
@@ -359,7 +408,7 @@
         
         .control-btn .icon {
             font-size: 14px;
-            opacity: 0.6;
+            opacity: 0.7;
         }
         
         .control-btn.danger:hover {
@@ -371,6 +420,140 @@
             height: 1px;
             background: var(--border-light);
             margin: var(--space-1) 0;
+        }
+        
+        /* Hidden file input */
+        #import-input {
+            display: none;
+        }
+        
+        /* ─── Dark Mode Toggle ─── */
+        #theme-toggle {
+            position: fixed;
+            top: var(--space-6);
+            right: 180px;
+            z-index: var(--z-ui);
+            width: 44px;
+            height: 44px;
+            background: var(--surface-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all var(--duration-normal) var(--ease-out);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        #theme-toggle:hover {
+            background: var(--bg-tertiary);
+            transform: scale(1.05);
+        }
+        
+        /* ─── Quick Capture ─── */
+        #quick-capture {
+            position: fixed;
+            bottom: var(--space-6);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: var(--z-ui);
+            width: min(500px, calc(100vw - var(--space-8)));
+            display: none;
+        }
+        
+        #quick-capture.active {
+            display: block;
+            animation: slideUp var(--duration-normal) var(--ease-out);
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        .quick-capture-wrapper {
+            display: flex;
+            gap: var(--space-2);
+            background: var(--surface-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-light);
+            border-radius: 14px;
+            padding: var(--space-2);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        #quick-capture-input {
+            flex: 1;
+            padding: var(--space-3) var(--space-4);
+            font-size: 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            outline: none;
+        }
+        
+        #quick-capture-input:focus {
+            border-color: var(--border-medium);
+        }
+        
+        .quick-capture-btn {
+            padding: var(--space-3) var(--space-4);
+            background: var(--graphite);
+            color: var(--milk);
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all var(--duration-fast);
+        }
+        
+        [data-theme="dark"] .quick-capture-btn {
+            background: var(--desert-clay);
+            color: white;
+        }
+        
+        .quick-capture-btn:hover {
+            transform: scale(1.02);
+        }
+        
+        .quick-capture-hint {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: var(--space-2);
+        }
+        
+        /* ─── Minimap ─── */
+        #minimap {
+            position: fixed;
+            bottom: var(--space-6);
+            right: var(--space-6);
+            width: 160px;
+            height: 160px;
+            background: var(--surface-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            overflow: hidden;
+            z-index: var(--z-ui);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        #minimap-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .minimap-label {
+            position: absolute;
+            top: var(--space-2);
+            left: var(--space-2);
+            font-family: var(--font-mono);
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         /* ─── Breadcrumb Trail ─── */
@@ -424,7 +607,8 @@
             transform: translateX(-50%);
             z-index: var(--z-ui);
             width: min(600px, calc(100vw - var(--space-8)));
-            background: white;
+            background: var(--surface-card);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--border-light);
             border-radius: 16px;
             padding: var(--space-5) var(--space-6);
@@ -448,6 +632,11 @@
             display: flex;
             align-items: center;
             gap: var(--space-3);
+            flex-shrink: 0;
+        }
+        
+        .panel-emoji {
+            font-size: 24px;
             flex-shrink: 0;
         }
         
@@ -547,8 +736,12 @@
             box-shadow: var(--shadow-md);
         }
         
+        [data-theme="dark"] .action-btn.primary {
+            background: var(--desert-clay);
+            color: white;
+        }
+        
         .action-btn.primary:hover {
-            background: var(--charcoal);
             transform: translateY(-1px);
             box-shadow: var(--shadow-lg);
         }
@@ -575,6 +768,10 @@
             place-items: center;
         }
         
+        [data-theme="dark"] .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+        }
+        
         .modal-overlay.active {
             display: grid;
             animation: fadeIn var(--duration-normal);
@@ -587,7 +784,8 @@
         
         .modal-content {
             width: min(420px, calc(100vw - var(--space-8)));
-            background: white;
+            background: var(--surface-card);
+            backdrop-filter: blur(20px);
             border: 1px solid var(--border-light);
             border-radius: 20px;
             padding: var(--space-7);
@@ -637,7 +835,6 @@
         .form-group input:focus,
         .form-group textarea:focus {
             border-color: var(--border-medium);
-            background: white;
             box-shadow: var(--shadow-sm);
         }
         
@@ -649,6 +846,63 @@
         .form-group textarea {
             resize: vertical;
             min-height: 80px;
+        }
+        
+        /* Emoji picker */
+        .emoji-input-wrapper {
+            display: flex;
+            gap: var(--space-2);
+        }
+        
+        .emoji-input-wrapper input {
+            flex: 1;
+        }
+        
+        #emoji-picker-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            font-size: 20px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: all var(--duration-fast);
+        }
+        
+        #emoji-picker-btn:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: var(--space-1);
+            margin-top: var(--space-2);
+            padding: var(--space-2);
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .emoji-grid.active {
+            display: grid;
+        }
+        
+        .emoji-option {
+            width: 32px;
+            height: 32px;
+            display: grid;
+            place-items: center;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background var(--duration-fast);
+        }
+        
+        .emoji-option:hover {
+            background: var(--bg-tertiary);
         }
         
         .color-picker {
@@ -674,6 +928,10 @@
         .color-option.selected {
             border-color: var(--graphite);
             box-shadow: var(--shadow-md);
+        }
+        
+        [data-theme="dark"] .color-option.selected {
+            border-color: white;
         }
         
         .color-option.selected::after {
@@ -720,8 +978,12 @@
             box-shadow: var(--shadow-md);
         }
         
+        [data-theme="dark"] #modal-submit {
+            background: var(--desert-clay);
+            color: white;
+        }
+        
         #modal-submit:hover {
-            background: var(--charcoal);
             transform: translateY(-1px);
             box-shadow: var(--shadow-lg);
         }
@@ -729,17 +991,20 @@
         /* ─── Toast Notifications ─── */
         #toast-container {
             position: fixed;
-            bottom: var(--space-6);
-            right: var(--space-6);
+            top: var(--space-6);
+            left: 50%;
+            transform: translateX(-50%);
             z-index: var(--z-toast);
             display: flex;
             flex-direction: column;
             gap: var(--space-2);
+            pointer-events: none;
         }
         
         .toast {
             padding: var(--space-3) var(--space-4);
-            background: white;
+            background: var(--surface-card);
+            backdrop-filter: blur(16px);
             border: 1px solid var(--border-light);
             border-radius: 10px;
             font-size: 13px;
@@ -748,6 +1013,7 @@
             gap: var(--space-2);
             animation: toastIn var(--duration-normal) var(--ease-out);
             box-shadow: var(--shadow-lg);
+            pointer-events: auto;
         }
         
         .toast.success {
@@ -771,13 +1037,13 @@
         }
         
         @keyframes toastIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         @keyframes toastOut {
-            from { opacity: 1; transform: translateX(0); }
-            to { opacity: 0; transform: translateX(20px); }
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
         }
         
         /* ─── Node Labels (3D) ─── */
@@ -793,11 +1059,24 @@
             user-select: none;
             white-space: nowrap;
             text-align: center;
-            background: rgba(255, 255, 255, 0.9);
+            background: var(--surface-card);
             padding: 4px 10px;
             border-radius: 6px;
             box-shadow: var(--shadow-sm);
             backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .node-label-emoji {
+            font-size: 12px;
+        }
+        
+        /* ─── Keyboard Nav Highlight ─── */
+        .keyboard-focus {
+            outline: 2px dashed var(--desert-clay) !important;
+            outline-offset: 4px;
         }
         
         /* ─── Loading State ─── */
@@ -844,6 +1123,10 @@
             animation: loading 1.5s ease-in-out infinite;
         }
         
+        [data-theme="dark"] .loader-bar-fill {
+            background: var(--desert-clay);
+        }
+        
         @keyframes loading {
             0% { width: 0%; margin-left: 0%; }
             50% { width: 50%; margin-left: 25%; }
@@ -856,12 +1139,13 @@
             bottom: var(--space-6);
             left: var(--space-6);
             z-index: var(--z-ui);
-            background: white;
+            background: var(--surface-card);
+            backdrop-filter: blur(16px);
             border: 1px solid var(--border-light);
             border-radius: 12px;
             padding: var(--space-4);
             display: none;
-            min-width: 200px;
+            min-width: 220px;
             box-shadow: var(--shadow-lg);
         }
         
@@ -906,6 +1190,12 @@
                 display: none;
             }
             
+            #theme-toggle {
+                right: var(--space-6);
+                top: auto;
+                bottom: 80px;
+            }
+            
             #controls-panel {
                 flex-direction: row;
                 flex-wrap: wrap;
@@ -926,7 +1216,7 @@
             }
             
             #info-panel {
-                bottom: 70px;
+                bottom: 80px;
                 width: calc(100vw - var(--space-6));
                 padding: var(--space-3) var(--space-4);
             }
@@ -944,6 +1234,14 @@
             
             #node-details {
                 display: none;
+            }
+            
+            #minimap {
+                display: none;
+            }
+            
+            #quick-capture {
+                bottom: 80px;
             }
         }
         
@@ -1004,6 +1302,9 @@
         </div>
     </header>
     
+    <!-- Theme Toggle -->
+    <button id="theme-toggle" aria-label="Toggle dark mode">☀️</button>
+    
     <!-- Search -->
     <div id="search-container">
         <div class="search-wrapper">
@@ -1043,10 +1344,17 @@
             <span class="icon">↓</span>
             <span class="text">Export</span>
         </button>
+        <button class="control-btn" id="import-btn" aria-label="Import map">
+            <span class="icon">↑</span>
+            <span class="text">Import</span>
+        </button>
         <button class="control-btn" id="help-btn" aria-label="Toggle help">
             <span class="icon">?</span>
         </button>
     </nav>
+    
+    <!-- Hidden file input for import -->
+    <input type="file" id="import-input" accept=".json">
     
     <!-- Breadcrumb -->
     <nav id="breadcrumb" aria-label="Navigation path">
@@ -1063,14 +1371,32 @@
         <div class="help-item"><span class="help-key">Scroll</span> Zoom</div>
         <div class="help-item"><span class="help-key">Esc</span> Deselect</div>
         <div class="help-item"><span class="help-key">⌘K</span> Search</div>
+        <div class="help-item"><span class="help-key">Q</span> Quick capture</div>
         <div class="help-item"><span class="help-key">N</span> New node</div>
+        <div class="help-item"><span class="help-key">↑↓←→</span> Navigate</div>
         <div class="help-item"><span class="help-key">Del</span> Delete node</div>
-        <div class="help-item"><span class="help-key">⌘Z</span> Undo</div>
+        <div class="help-item"><span class="help-key">D</span> Toggle dark</div>
     </aside>
+    
+    <!-- Quick Capture -->
+    <div id="quick-capture">
+        <div class="quick-capture-wrapper">
+            <input type="text" id="quick-capture-input" placeholder="Quick thought... (Enter to add)">
+            <button class="quick-capture-btn" id="quick-capture-submit">Add</button>
+        </div>
+        <div class="quick-capture-hint">Press Esc to close • Adding to selected node or root</div>
+    </div>
+    
+    <!-- Minimap -->
+    <div id="minimap">
+        <span class="minimap-label">Overview</span>
+        <canvas id="minimap-canvas"></canvas>
+    </div>
     
     <!-- Info Panel -->
     <aside id="info-panel" role="complementary" aria-label="Selected node details">
         <div class="panel-header">
+            <span class="panel-emoji" id="panel-emoji"></span>
             <div class="panel-color-dot" id="panel-color-dot"></div>
             <h2 id="node-title"></h2>
         </div>
@@ -1091,7 +1417,11 @@
             <h3 id="modal-title">Add Node</h3>
             <div class="form-group">
                 <label for="node-name-input">Name</label>
-                <input type="text" id="node-name-input" placeholder="Enter node name..." maxlength="40" autofocus>
+                <div class="emoji-input-wrapper">
+                    <input type="text" id="node-name-input" placeholder="Enter node name..." maxlength="40" autofocus>
+                    <button id="emoji-picker-btn" type="button">😊</button>
+                </div>
+                <div class="emoji-grid" id="emoji-grid"></div>
             </div>
             <div class="form-group">
                 <label for="node-desc-input">Description (optional)</label>
@@ -1133,8 +1463,17 @@
     <script type="module">
     /**
      * ═══════════════════════════════════════════════════════════════════════════
-     * MYND — Mind Architect
+     * MYND — Mind Architect v2.0
      * A minimal, organic 3D mind mapping experience
+     * 
+     * New Features:
+     * - Import JSON
+     * - Dark mode
+     * - Quick capture
+     * - Node emojis
+     * - Keyboard navigation
+     * - Drag to reorder
+     * - Minimap
      * ═══════════════════════════════════════════════════════════════════════════
      */
 
@@ -1170,56 +1509,61 @@
     // MODULE: Store
     // ═══════════════════════════════════════════════════════════════════════════
     
-    const STORAGE_KEY = 'mynd-mind-map-v3';
+    const STORAGE_KEY = 'mynd-mind-map-v4';
     
     const defaultData = {
         id: 'mynd',
         label: 'MYND',
+        emoji: '🧠',
         color: '#4A4947',
         description: 'Your mind map. Click to explore, add thoughts, and build connections.',
         children: [
             {
                 id: 'ideas',
                 label: 'Ideas',
+                emoji: '💡',
                 color: '#D4A088',
                 description: 'Creative sparks and inspirations',
                 children: [
-                    { id: 'idea-1', label: 'Dreams', color: '#C89080', description: 'Aspirations to explore' },
-                    { id: 'idea-2', label: 'Concepts', color: '#C89080', description: 'Abstract thoughts' },
-                    { id: 'idea-3', label: 'Visions', color: '#C89080', description: 'Future possibilities' }
+                    { id: 'idea-1', label: 'Dreams', emoji: '✨', color: '#C89080', description: 'Aspirations to explore' },
+                    { id: 'idea-2', label: 'Concepts', emoji: '🎨', color: '#C89080', description: 'Abstract thoughts' },
+                    { id: 'idea-3', label: 'Visions', emoji: '🔮', color: '#C89080', description: 'Future possibilities' }
                 ]
             },
             {
                 id: 'projects',
                 label: 'Projects',
+                emoji: '🚀',
                 color: '#A8B89E',
                 description: 'Active work and initiatives',
                 children: [
-                    { id: 'proj-1', label: 'Current', color: '#8FA888', description: 'In progress now' },
-                    { id: 'proj-2', label: 'Planned', color: '#8FA888', description: 'Coming soon' },
-                    { id: 'proj-3', label: 'Archive', color: '#8FA888', description: 'Completed work' }
+                    { id: 'proj-1', label: 'Current', emoji: '⚡', color: '#8FA888', description: 'In progress now' },
+                    { id: 'proj-2', label: 'Planned', emoji: '📋', color: '#8FA888', description: 'Coming soon' },
+                    { id: 'proj-3', label: 'Archive', emoji: '📦', color: '#8FA888', description: 'Completed work' }
                 ]
             },
             {
                 id: 'knowledge',
                 label: 'Knowledge',
+                emoji: '📚',
                 color: '#9EACAD',
                 description: 'Learnings and insights',
                 children: [
-                    { id: 'know-1', label: 'Skills', color: '#889898', description: 'Abilities to develop' },
-                    { id: 'know-2', label: 'Notes', color: '#889898', description: 'Quick captures' },
-                    { id: 'know-3', label: 'Links', color: '#889898', description: 'Resources to remember' }
+                    { id: 'know-1', label: 'Skills', emoji: '🛠️', color: '#889898', description: 'Abilities to develop' },
+                    { id: 'know-2', label: 'Notes', emoji: '📝', color: '#889898', description: 'Quick captures' },
+                    { id: 'know-3', label: 'Links', emoji: '🔗', color: '#889898', description: 'Resources to remember' }
                 ]
             },
             {
                 id: 'life',
                 label: 'Life',
+                emoji: '🌱',
                 color: '#E5DCC8',
                 description: 'Personal domains',
                 children: [
-                    { id: 'life-1', label: 'Health', color: '#D9C4A8', description: 'Wellbeing focus' },
-                    { id: 'life-2', label: 'Goals', color: '#D9C4A8', description: 'Targets to reach' },
-                    { id: 'life-3', label: 'Memories', color: '#D9C4A8', description: 'Moments to cherish' }
+                    { id: 'life-1', label: 'Health', emoji: '💪', color: '#D9C4A8', description: 'Wellbeing focus' },
+                    { id: 'life-2', label: 'Goals', emoji: '🎯', color: '#D9C4A8', description: 'Targets to reach' },
+                    { id: 'life-3', label: 'Memories', emoji: '📸', color: '#D9C4A8', description: 'Moments to cherish' }
                 ]
             }
         ]
@@ -1230,6 +1574,7 @@
             this.data = this.load();
             this.selectedNodeId = null;
             this.expandedNodes = new Set();
+            this.keyboardFocusId = null;
         }
         
         load() {
@@ -1275,6 +1620,12 @@
             return undefined;
         }
         
+        getSiblings(id) {
+            const parent = this.findParent(id);
+            if (!parent || !parent.children) return [];
+            return parent.children;
+        }
+        
         addNode(parentId, nodeData) {
             const parent = this.findNode(parentId);
             if (!parent) return null;
@@ -1283,6 +1634,7 @@
             const newNode = {
                 id: nodeData.id || `node-${Date.now()}`,
                 label: nodeData.label,
+                emoji: nodeData.emoji || '',
                 color: nodeData.color,
                 description: nodeData.description || '',
                 children: []
@@ -1320,6 +1672,59 @@
             return true;
         }
         
+        moveNode(nodeId, newParentId, newIndex = -1) {
+            if (nodeId === this.data.id) return false;
+            if (nodeId === newParentId) return false;
+            
+            const node = this.findNode(nodeId);
+            const oldParent = this.findParent(nodeId);
+            const newParent = this.findNode(newParentId);
+            
+            if (!node || !oldParent || !newParent) return false;
+            
+            // Check if newParent is a descendant of node (would create cycle)
+            let checkNode = newParent;
+            while (checkNode) {
+                if (checkNode.id === nodeId) return false;
+                checkNode = this.findParent(checkNode.id);
+            }
+            
+            // Remove from old parent
+            const oldIndex = oldParent.children.findIndex(c => c.id === nodeId);
+            oldParent.children.splice(oldIndex, 1);
+            
+            // Add to new parent
+            if (!newParent.children) newParent.children = [];
+            if (newIndex === -1 || newIndex >= newParent.children.length) {
+                newParent.children.push(node);
+            } else {
+                newParent.children.splice(newIndex, 0, node);
+            }
+            
+            this.expandedNodes.add(newParentId);
+            this.save();
+            bus.emit('node:moved', { node, oldParent, newParent });
+            return true;
+        }
+        
+        reorderNode(nodeId, direction) {
+            const parent = this.findParent(nodeId);
+            if (!parent || !parent.children || parent.children.length < 2) return false;
+            
+            const index = parent.children.findIndex(c => c.id === nodeId);
+            const newIndex = direction === 'up' ? index - 1 : index + 1;
+            
+            if (newIndex < 0 || newIndex >= parent.children.length) return false;
+            
+            // Swap
+            [parent.children[index], parent.children[newIndex]] = 
+            [parent.children[newIndex], parent.children[index]];
+            
+            this.save();
+            bus.emit('node:reordered', { nodeId, direction });
+            return true;
+        }
+        
         getAllNodes(node = this.data, result = []) {
             result.push(node);
             if (node.children) {
@@ -1328,11 +1733,39 @@
             return result;
         }
         
+        getVisibleNodes() {
+            const visible = [this.data];
+            
+            const addVisible = (node) => {
+                if (node.children) {
+                    node.children.forEach(child => {
+                        visible.push(child);
+                        if (this.expandedNodes.has(child.id)) {
+                            addVisible(child);
+                        }
+                    });
+                }
+            };
+            
+            // Root children are always visible
+            if (this.data.children) {
+                this.data.children.forEach(child => {
+                    visible.push(child);
+                    if (this.expandedNodes.has(child.id)) {
+                        addVisible(child);
+                    }
+                });
+            }
+            
+            return visible;
+        }
+        
         searchNodes(query) {
             const q = query.toLowerCase();
             return this.getAllNodes().filter(n => 
                 n.label.toLowerCase().includes(q) || 
-                (n.description && n.description.toLowerCase().includes(q))
+                (n.description && n.description.toLowerCase().includes(q)) ||
+                (n.emoji && n.emoji.includes(q))
             );
         }
         
@@ -1362,17 +1795,24 @@
         importJSON(json) {
             try {
                 const data = JSON.parse(json);
+                // Basic validation
+                if (!data.id || !data.label) {
+                    throw new Error('Invalid data structure');
+                }
                 this.data = data;
+                this.expandedNodes.clear();
                 this.save();
                 bus.emit('data:imported');
                 return true;
             } catch (e) {
+                console.error('Import failed:', e);
                 return false;
             }
         }
         
         reset() {
             this.data = JSON.parse(JSON.stringify(defaultData));
+            this.expandedNodes.clear();
             this.save();
             bus.emit('data:reset');
         }
@@ -1381,52 +1821,32 @@
     const store = new Store();
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // MODULE: CommandHistory
+    // MODULE: ThemeManager
     // ═══════════════════════════════════════════════════════════════════════════
     
-    class CommandHistory {
-        constructor(maxSize = 50) {
-            this.undoStack = [];
-            this.redoStack = [];
-            this.maxSize = maxSize;
+    class ThemeManager {
+        constructor() {
+            this.theme = localStorage.getItem('mynd-theme') || 'light';
+            this.apply();
         }
         
-        execute(command) {
-            command.execute();
-            this.undoStack.push(command);
-            if (this.undoStack.length > this.maxSize) {
-                this.undoStack.shift();
-            }
-            this.redoStack = [];
-            bus.emit('history:changed', { canUndo: this.canUndo(), canRedo: this.canRedo() });
+        apply() {
+            document.documentElement.setAttribute('data-theme', this.theme);
+            document.getElementById('theme-toggle').textContent = this.theme === 'light' ? '🌙' : '☀️';
         }
         
-        undo() {
-            if (!this.canUndo()) return false;
-            const command = this.undoStack.pop();
-            command.undo();
-            this.redoStack.push(command);
-            bus.emit('history:changed', { canUndo: this.canUndo(), canRedo: this.canRedo() });
-            return true;
+        toggle() {
+            this.theme = this.theme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('mynd-theme', this.theme);
+            this.apply();
+            bus.emit('theme:changed', { theme: this.theme });
         }
-        
-        redo() {
-            if (!this.canRedo()) return false;
-            const command = this.redoStack.pop();
-            command.execute();
-            this.undoStack.push(command);
-            bus.emit('history:changed', { canUndo: this.canUndo(), canRedo: this.canRedo() });
-            return true;
-        }
-        
-        canUndo() { return this.undoStack.length > 0; }
-        canRedo() { return this.redoStack.length > 0; }
     }
     
-    const history = new CommandHistory();
+    const themeManager = new ThemeManager();
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // MODULE: AudioEngine — Subtle Sound Effects
+    // MODULE: AudioEngine
     // ═══════════════════════════════════════════════════════════════════════════
     
     class AudioEngine {
@@ -1465,30 +1885,115 @@
             } catch (e) {}
         }
         
-        select() {
-            this.playTone(600, 0.08, 'sine', 0.02);
-        }
-        
-        expand() {
-            this.playTone(400, 0.1, 'sine', 0.02);
-            setTimeout(() => this.playTone(500, 0.08, 'sine', 0.015), 60);
-        }
-        
-        collapse() {
-            this.playTone(500, 0.08, 'sine', 0.02);
-            setTimeout(() => this.playTone(400, 0.1, 'sine', 0.015), 60);
-        }
-        
-        add() {
-            this.playTone(700, 0.1, 'sine', 0.02);
-        }
-        
-        error() {
-            this.playTone(200, 0.15, 'triangle', 0.02);
-        }
+        select() { this.playTone(600, 0.08, 'sine', 0.02); }
+        expand() { this.playTone(400, 0.1, 'sine', 0.02); setTimeout(() => this.playTone(500, 0.08, 'sine', 0.015), 60); }
+        collapse() { this.playTone(500, 0.08, 'sine', 0.02); setTimeout(() => this.playTone(400, 0.1, 'sine', 0.015), 60); }
+        add() { this.playTone(700, 0.1, 'sine', 0.02); }
+        error() { this.playTone(200, 0.15, 'triangle', 0.02); }
+        navigate() { this.playTone(800, 0.05, 'sine', 0.01); }
     }
     
     const audio = new AudioEngine();
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MODULE: Minimap
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    class Minimap {
+        constructor() {
+            this.canvas = document.getElementById('minimap-canvas');
+            this.ctx = this.canvas.getContext('2d');
+            this.resize();
+        }
+        
+        resize() {
+            const rect = this.canvas.parentElement.getBoundingClientRect();
+            this.canvas.width = rect.width * 2;
+            this.canvas.height = rect.height * 2;
+            this.ctx.scale(2, 2);
+        }
+        
+        render(nodes, cameraTarget) {
+            const { ctx, canvas } = this;
+            const w = canvas.width / 2;
+            const h = canvas.height / 2;
+            
+            // Clear
+            ctx.clearRect(0, 0, w, h);
+            
+            // Background
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            ctx.fillStyle = isDark ? '#1a1a1a' : '#F9F7F0';
+            ctx.fillRect(0, 0, w, h);
+            
+            // Calculate bounds
+            let minX = Infinity, maxX = -Infinity;
+            let minZ = Infinity, maxZ = -Infinity;
+            
+            nodes.forEach(([id, mesh]) => {
+                if (mesh.visible) {
+                    minX = Math.min(minX, mesh.position.x);
+                    maxX = Math.max(maxX, mesh.position.x);
+                    minZ = Math.min(minZ, mesh.position.z);
+                    maxZ = Math.max(maxZ, mesh.position.z);
+                }
+            });
+            
+            const padding = 20;
+            const rangeX = Math.max(maxX - minX, 1);
+            const rangeZ = Math.max(maxZ - minZ, 1);
+            const scale = Math.min((w - padding * 2) / rangeX, (h - padding * 2) / rangeZ);
+            
+            const offsetX = (w - rangeX * scale) / 2 - minX * scale;
+            const offsetZ = (h - rangeZ * scale) / 2 - minZ * scale;
+            
+            // Draw connections
+            ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
+            ctx.lineWidth = 1;
+            
+            nodes.forEach(([id, mesh]) => {
+                if (mesh.visible && mesh.userData.parent) {
+                    const parentMesh = nodes.find(([pid]) => pid === mesh.userData.parent.id);
+                    if (parentMesh && parentMesh[1].visible) {
+                        ctx.beginPath();
+                        ctx.moveTo(parentMesh[1].position.x * scale + offsetX, parentMesh[1].position.z * scale + offsetZ);
+                        ctx.lineTo(mesh.position.x * scale + offsetX, mesh.position.z * scale + offsetZ);
+                        ctx.stroke();
+                    }
+                }
+            });
+            
+            // Draw nodes
+            nodes.forEach(([id, mesh]) => {
+                if (mesh.visible) {
+                    const x = mesh.position.x * scale + offsetX;
+                    const z = mesh.position.z * scale + offsetZ;
+                    const size = Math.max(3, mesh.userData.size * 2);
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, z, size, 0, Math.PI * 2);
+                    ctx.fillStyle = mesh.userData.color || '#888';
+                    ctx.fill();
+                    
+                    // Selected highlight
+                    if (mesh.userData.id === store.selectedNodeId) {
+                        ctx.strokeStyle = isDark ? '#fff' : '#000';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                }
+            });
+            
+            // Draw camera viewport indicator
+            ctx.strokeStyle = isDark ? 'rgba(177, 116, 87, 0.6)' : 'rgba(177, 116, 87, 0.4)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            const camX = cameraTarget.x * scale + offsetX;
+            const camZ = cameraTarget.z * scale + offsetZ;
+            ctx.strokeRect(camX - 15, camZ - 15, 30, 30);
+            ctx.setLineDash([]);
+        }
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // MODULE: UIController
@@ -1503,6 +2008,7 @@
                 nodeDetails: document.getElementById('node-details'),
                 nodeMeta: document.getElementById('node-meta'),
                 panelColorDot: document.getElementById('panel-color-dot'),
+                panelEmoji: document.getElementById('panel-emoji'),
                 breadcrumb: document.getElementById('breadcrumb'),
                 breadcrumbPath: document.getElementById('breadcrumb-path'),
                 searchInput: document.getElementById('search-input'),
@@ -1512,40 +2018,81 @@
                 nameInput: document.getElementById('node-name-input'),
                 descInput: document.getElementById('node-desc-input'),
                 toastContainer: document.getElementById('toast-container'),
-                helpPanel: document.getElementById('help-panel')
+                helpPanel: document.getElementById('help-panel'),
+                quickCapture: document.getElementById('quick-capture'),
+                quickCaptureInput: document.getElementById('quick-capture-input'),
+                emojiGrid: document.getElementById('emoji-grid'),
+                importInput: document.getElementById('import-input')
             };
             
             this.modalMode = 'add';
             this.modalParentId = null;
             this.modalEditId = null;
             this.selectedColor = '#D4A088';
+            this.selectedEmoji = '';
             this.searchResultIndex = -1;
             
+            this.emojis = ['💡', '🚀', '📚', '🎯', '✨', '🔮', '⚡', '📋', '📦', '🛠️', '📝', '🔗', '🌱', '💪', '📸', '🎨', '💭', '🧠', '❤️', '⭐', '🔥', '💎', '🎵', '🌟', '🏆', '🎪', '🌈', '☀️', '🌙', '🍀', '🎁', '🔔'];
+            
             this.bindEvents();
+            this.setupEmojiPicker();
+        }
+        
+        setupEmojiPicker() {
+            this.elements.emojiGrid.innerHTML = this.emojis.map(e => 
+                `<div class="emoji-option" data-emoji="${e}">${e}</div>`
+            ).join('');
+            
+            this.elements.emojiGrid.addEventListener('click', (e) => {
+                if (e.target.classList.contains('emoji-option')) {
+                    this.selectedEmoji = e.target.dataset.emoji;
+                    document.getElementById('emoji-picker-btn').textContent = this.selectedEmoji;
+                    this.elements.emojiGrid.classList.remove('active');
+                }
+            });
+            
+            document.getElementById('emoji-picker-btn').addEventListener('click', () => {
+                this.elements.emojiGrid.classList.toggle('active');
+            });
         }
         
         bindEvents() {
-            document.getElementById('close-btn').addEventListener('click', () => {
-                bus.emit('ui:deselect');
-            });
-            
+            document.getElementById('close-btn').addEventListener('click', () => bus.emit('ui:deselect'));
             document.getElementById('reset-view-btn').addEventListener('click', () => bus.emit('camera:reset'));
             document.getElementById('expand-all-btn').addEventListener('click', () => bus.emit('nodes:expandAll'));
             document.getElementById('collapse-all-btn').addEventListener('click', () => bus.emit('nodes:collapseAll'));
             document.getElementById('add-root-btn').addEventListener('click', () => this.openModal('add', store.data.id));
             document.getElementById('export-btn').addEventListener('click', () => this.exportMap());
             document.getElementById('help-btn').addEventListener('click', () => this.toggleHelp());
+            document.getElementById('theme-toggle').addEventListener('click', () => themeManager.toggle());
+            
+            // Import
+            document.getElementById('import-btn').addEventListener('click', () => {
+                this.elements.importInput.click();
+            });
+            
+            this.elements.importInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        if (store.importJSON(ev.target.result)) {
+                            this.toast('Map imported successfully!', 'success');
+                        } else {
+                            this.toast('Failed to import map', 'error');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+                e.target.value = '';
+            });
             
             document.getElementById('add-node-btn').addEventListener('click', () => {
-                if (store.selectedNodeId) {
-                    this.openModal('add', store.selectedNodeId);
-                }
+                if (store.selectedNodeId) this.openModal('add', store.selectedNodeId);
             });
             
             document.getElementById('edit-node-btn').addEventListener('click', () => {
-                if (store.selectedNodeId) {
-                    this.openModal('edit', store.selectedNodeId);
-                }
+                if (store.selectedNodeId) this.openModal('edit', store.selectedNodeId);
             });
             
             document.getElementById('modal-cancel').addEventListener('click', () => this.closeModal());
@@ -1554,6 +2101,7 @@
                 if (e.target === this.elements.modal) this.closeModal();
             });
             
+            // Color picker
             document.querySelectorAll('.color-option').forEach(opt => {
                 opt.addEventListener('click', () => {
                     document.querySelectorAll('.color-option').forEach(o => {
@@ -1566,12 +2114,11 @@
                 });
             });
             
+            // Search
             this.elements.searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
             this.elements.searchInput.addEventListener('keydown', (e) => this.handleSearchKeydown(e));
             this.elements.searchInput.addEventListener('focus', () => {
-                if (this.elements.searchInput.value) {
-                    this.handleSearch(this.elements.searchInput.value);
-                }
+                if (this.elements.searchInput.value) this.handleSearch(this.elements.searchInput.value);
             });
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('#search-container')) {
@@ -1579,6 +2126,14 @@
                 }
             });
             
+            // Quick Capture
+            document.getElementById('quick-capture-submit').addEventListener('click', () => this.submitQuickCapture());
+            this.elements.quickCaptureInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') this.submitQuickCapture();
+                if (e.key === 'Escape') this.toggleQuickCapture(false);
+            });
+            
+            // Keyboard shortcuts
             document.addEventListener('keydown', (e) => this.handleKeyboard(e));
             
             this.elements.nameInput.addEventListener('keydown', (e) => {
@@ -1587,10 +2142,12 @@
         }
         
         handleKeyboard(e) {
+            // Don't handle if in input (except for specific keys)
             if (e.target.matches('input, textarea')) {
                 if (e.key === 'Escape') {
                     e.target.blur();
                     this.closeModal();
+                    this.toggleQuickCapture(false);
                 }
                 return;
             }
@@ -1599,11 +2156,18 @@
                 case 'Escape':
                     bus.emit('ui:deselect');
                     this.closeModal();
+                    this.toggleQuickCapture(false);
                     break;
                 case 'k':
                     if (e.metaKey || e.ctrlKey) {
                         e.preventDefault();
                         this.elements.searchInput.focus();
+                    }
+                    break;
+                case 'q':
+                    if (!e.metaKey && !e.ctrlKey) {
+                        e.preventDefault();
+                        this.toggleQuickCapture();
                     }
                     break;
                 case 'n':
@@ -1612,22 +2176,80 @@
                         this.openModal('add', parentId);
                     }
                     break;
+                case 'd':
+                    if (!e.metaKey && !e.ctrlKey) {
+                        themeManager.toggle();
+                    }
+                    break;
                 case 'Delete':
                 case 'Backspace':
                     if (store.selectedNodeId && store.selectedNodeId !== store.data.id) {
                         this.confirmDelete(store.selectedNodeId);
                     }
                     break;
-                case 'z':
-                    if (e.metaKey || e.ctrlKey) {
-                        e.preventDefault();
-                        if (e.shiftKey) {
-                            history.redo();
-                        } else {
-                            history.undo();
-                        }
+                case 'ArrowUp':
+                    e.preventDefault();
+                    if (e.shiftKey && store.selectedNodeId) {
+                        store.reorderNode(store.selectedNodeId, 'up');
+                    } else {
+                        bus.emit('keyboard:navigate', { direction: 'up' });
                     }
                     break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (e.shiftKey && store.selectedNodeId) {
+                        store.reorderNode(store.selectedNodeId, 'down');
+                    } else {
+                        bus.emit('keyboard:navigate', { direction: 'down' });
+                    }
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    bus.emit('keyboard:navigate', { direction: 'left' });
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    bus.emit('keyboard:navigate', { direction: 'right' });
+                    break;
+                case 'Enter':
+                    if (store.selectedNodeId) {
+                        bus.emit('keyboard:select');
+                    }
+                    break;
+            }
+        }
+        
+        toggleQuickCapture(force) {
+            const isActive = force !== undefined ? force : !this.elements.quickCapture.classList.contains('active');
+            
+            if (isActive) {
+                this.elements.quickCapture.classList.add('active');
+                this.elements.infoPanel.classList.remove('active');
+                setTimeout(() => this.elements.quickCaptureInput.focus(), 100);
+            } else {
+                this.elements.quickCapture.classList.remove('active');
+                this.elements.quickCaptureInput.value = '';
+            }
+        }
+        
+        submitQuickCapture() {
+            const value = this.elements.quickCaptureInput.value.trim();
+            if (!value) return;
+            
+            const parentId = store.selectedNodeId || store.data.id;
+            const parent = store.findNode(parentId);
+            
+            const newNode = store.addNode(parentId, {
+                label: value,
+                color: parent?.color || '#D4A088',
+                emoji: '',
+                description: ''
+            });
+            
+            if (newNode) {
+                this.toast(`Added "${value}"`, 'success');
+                audio.add();
+                this.elements.quickCaptureInput.value = '';
             }
         }
         
@@ -1648,7 +2270,7 @@
                     const path = store.getPath(node.id).map(n => n.label).join(' › ');
                     return `
                         <div class="search-result" data-id="${node.id}" data-index="${i}">
-                            <div class="search-result-dot" style="background: ${node.color}"></div>
+                            ${node.emoji ? `<span class="search-result-icon">${node.emoji}</span>` : `<div class="search-result-dot" style="background: ${node.color}"></div>`}
                             <span class="search-result-label">${node.label}</span>
                             <span class="search-result-path">${path}</span>
                         </div>
@@ -1705,9 +2327,13 @@
         
         showNodeInfo(nodeData) {
             store.selectedNodeId = nodeData.id;
+            this.toggleQuickCapture(false);
             
             this.elements.nodeTitle.textContent = nodeData.label;
             this.elements.panelColorDot.style.background = nodeData.color;
+            this.elements.panelEmoji.textContent = nodeData.emoji || '';
+            this.elements.panelEmoji.style.display = nodeData.emoji ? 'block' : 'none';
+            this.elements.panelColorDot.style.display = nodeData.emoji ? 'none' : 'block';
             
             let details = '';
             if (nodeData.description) {
@@ -1722,9 +2348,7 @@
             this.elements.nodeDetails.innerHTML = details;
             
             const childCount = nodeData.children?.length || 0;
-            this.elements.nodeMeta.innerHTML = `
-                <span class="meta-tag">${childCount} nodes</span>
-            `;
+            this.elements.nodeMeta.innerHTML = `<span class="meta-tag">${childCount} nodes</span>`;
             
             this.elements.infoPanel.classList.add('active');
             this.updateBreadcrumb(nodeData.id);
@@ -1745,7 +2369,8 @@
             
             this.elements.breadcrumbPath.innerHTML = path.map((node, i) => {
                 const isLast = i === path.length - 1;
-                return `<span class="breadcrumb-item ${isLast ? 'current' : ''}">${node.label}</span>` +
+                const emoji = node.emoji ? `${node.emoji} ` : '';
+                return `<span class="breadcrumb-item ${isLast ? 'current' : ''}">${emoji}${node.label}</span>` +
                     (isLast ? '' : '<span class="breadcrumb-separator">›</span>');
             }).join('');
             
@@ -1754,6 +2379,7 @@
         
         openModal(mode, targetId) {
             this.modalMode = mode;
+            this.elements.emojiGrid.classList.remove('active');
             
             if (mode === 'add') {
                 this.modalParentId = targetId;
@@ -1762,6 +2388,8 @@
                 document.getElementById('modal-submit').textContent = 'Add Node';
                 this.elements.nameInput.value = '';
                 this.elements.descInput.value = '';
+                this.selectedEmoji = '';
+                document.getElementById('emoji-picker-btn').textContent = '😊';
                 
                 const parent = store.findNode(targetId);
                 if (parent) {
@@ -1783,6 +2411,8 @@
                 this.elements.nameInput.value = node.label;
                 this.elements.descInput.value = node.description || '';
                 this.selectedColor = node.color;
+                this.selectedEmoji = node.emoji || '';
+                document.getElementById('emoji-picker-btn').textContent = node.emoji || '😊';
                 
                 document.querySelectorAll('.color-option').forEach(opt => {
                     const isSelected = opt.dataset.color === node.color;
@@ -1797,6 +2427,7 @@
         
         closeModal() {
             this.elements.modal.classList.remove('active');
+            this.elements.emojiGrid.classList.remove('active');
             this.modalParentId = null;
             this.modalEditId = null;
         }
@@ -1812,6 +2443,7 @@
             if (this.modalMode === 'add' && this.modalParentId) {
                 const newNode = store.addNode(this.modalParentId, {
                     label: name,
+                    emoji: this.selectedEmoji,
                     color: this.selectedColor,
                     description: this.elements.descInput.value.trim()
                 });
@@ -1823,6 +2455,7 @@
             } else if (this.modalMode === 'edit' && this.modalEditId) {
                 store.updateNode(this.modalEditId, {
                     label: name,
+                    emoji: this.selectedEmoji,
                     color: this.selectedColor,
                     description: this.elements.descInput.value.trim()
                 });
@@ -1884,14 +2517,13 @@
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // MODULE: Organic 3D Scene
+    // MODULE: 3D Scene
     // ═══════════════════════════════════════════════════════════════════════════
     
     async function initOrganicScene() {
         const THREE = await import('three');
         const { OrbitControls } = await import('three/addons/controls/OrbitControls.js');
         
-        // Scene setup with transparent background
         const scene = new THREE.Scene();
         scene.background = null;
         
@@ -1920,19 +2552,10 @@
         controls.screenSpacePanning = true;
         controls.maxPolarAngle = Math.PI * 0.85;
         
-        // Mouse button mapping: LEFT=rotate, RIGHT=pan, MIDDLE=zoom
         controls.mouseButtons = {
             LEFT: THREE.MOUSE.ROTATE,
             MIDDLE: THREE.MOUSE.DOLLY,
             RIGHT: THREE.MOUSE.PAN
-        };
-        
-        // Keyboard: SHIFT+LEFT = pan
-        controls.keys = {
-            LEFT: 'ArrowLeft',
-            UP: 'ArrowUp',
-            RIGHT: 'ArrowRight',
-            BOTTOM: 'ArrowDown'
         };
         
         // Shift+left click for panning
@@ -1950,7 +2573,7 @@
             }
         });
         
-        // Soft lighting
+        // Lighting
         const ambientLight = new THREE.AmbientLight(0xF9F7F0, 0.7);
         scene.add(ambientLight);
         
@@ -1959,12 +2582,6 @@
         mainLight.castShadow = true;
         mainLight.shadow.mapSize.width = 2048;
         mainLight.shadow.mapSize.height = 2048;
-        mainLight.shadow.camera.near = 0.5;
-        mainLight.shadow.camera.far = 100;
-        mainLight.shadow.camera.left = -30;
-        mainLight.shadow.camera.right = 30;
-        mainLight.shadow.camera.top = 30;
-        mainLight.shadow.camera.bottom = -30;
         mainLight.shadow.radius = 4;
         scene.add(mainLight);
         
@@ -1972,11 +2589,7 @@
         fillLight.position.set(-10, 5, -10);
         scene.add(fillLight);
         
-        const rimLight = new THREE.DirectionalLight(0xB17457, 0.2);
-        rimLight.position.set(0, -10, 5);
-        scene.add(rimLight);
-        
-        // Subtle ground plane for shadow catching
+        // Ground
         const groundGeometry = new THREE.CircleGeometry(40, 64);
         const groundMaterial = new THREE.ShadowMaterial({ opacity: 0.05 });
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
@@ -1989,19 +2602,20 @@
         const nodes = new Map();
         const connections = [];
         let selectedNode = null;
+        let keyboardFocusNode = null;
         
-        // Matte material for organic look
-        function createMatteMaterial(color, isCenter = false) {
-            const mat = new THREE.MeshStandardMaterial({
+        // Initialize minimap
+        const minimap = new Minimap();
+        
+        function createMatteMaterial(color) {
+            return new THREE.MeshStandardMaterial({
                 color: new THREE.Color(color),
-                roughness: isCenter ? 0.6 : 0.75,
+                roughness: 0.75,
                 metalness: 0.0,
                 flatShading: false
             });
-            return mat;
         }
         
-        // Calculate positions
         function calculatePositions(data, parentPos = [0, 0, 0], level = 0, parentAngle = 0, total = 1, index = 0) {
             data.level = level;
             
@@ -2010,17 +2624,8 @@
             else if (level === 2) data.size = 0.55;
             else data.size = Math.max(0.35, 0.55 - (level - 2) * 0.05);
             
-            let baseRadius;
-            if (level === 0) baseRadius = 0;
-            else if (level === 1) baseRadius = 6.5;
-            else baseRadius = 3.5;
-            
-            let expandedRadius;
-            if (level === 0) expandedRadius = 0;
-            else if (level === 1) expandedRadius = 9;
-            else expandedRadius = 5 + (level - 2) * 0.8;
-            
-            let angle, verticalOffset;
+            let baseRadius = level === 0 ? 0 : (level === 1 ? 6.5 : 3.5);
+            let expandedRadius = level === 0 ? 0 : (level === 1 ? 9 : 5 + (level - 2) * 0.8);
             
             if (level === 0) {
                 data.position = [0, 0, 0];
@@ -2029,71 +2634,45 @@
                 data.branchAngle = 0;
             } else if (level === 1) {
                 const angleStep = (Math.PI * 2) / Math.max(total, 1);
-                angle = angleStep * index;
-                const verticalSpread = 1.5;
-                verticalOffset = (index - (total - 1) / 2) * verticalSpread * 0.25;
+                const angle = angleStep * index;
+                const verticalOffset = (index - (total - 1) / 2) * 1.5 * 0.25;
                 
-                data.basePosition = [
-                    Math.cos(angle) * baseRadius,
-                    verticalOffset,
-                    Math.sin(angle) * baseRadius
-                ];
-                
-                data.expandedPosition = [
-                    Math.cos(angle) * expandedRadius,
-                    verticalOffset,
-                    Math.sin(angle) * expandedRadius
-                ];
-                
+                data.basePosition = [Math.cos(angle) * baseRadius, verticalOffset, Math.sin(angle) * baseRadius];
+                data.expandedPosition = [Math.cos(angle) * expandedRadius, verticalOffset, Math.sin(angle) * expandedRadius];
                 data.position = [...data.basePosition];
                 data.branchAngle = angle;
             } else {
                 const spreadAngle = Math.PI * 0.55;
                 const halfSpread = spreadAngle / 2;
-                
-                let childAngle;
-                if (total === 1) {
-                    childAngle = parentAngle;
-                } else {
-                    const arcStep = spreadAngle / (total - 1);
-                    childAngle = parentAngle - halfSpread + (arcStep * index);
-                }
-                
-                const verticalSpread = 0.8 + level * 0.15;
-                verticalOffset = (index - (total - 1) / 2) * verticalSpread * 0.2;
+                let childAngle = total === 1 ? parentAngle : parentAngle - halfSpread + (spreadAngle / (total - 1)) * index;
+                const verticalOffset = (index - (total - 1) / 2) * (0.8 + level * 0.15) * 0.2;
                 
                 data.basePosition = [
                     parentPos[0] + Math.cos(childAngle) * baseRadius,
                     parentPos[1] + verticalOffset,
                     parentPos[2] + Math.sin(childAngle) * baseRadius
                 ];
-                
                 data.expandedPosition = [
                     parentPos[0] + Math.cos(childAngle) * expandedRadius,
                     parentPos[1] + verticalOffset,
                     parentPos[2] + Math.sin(childAngle) * expandedRadius
                 ];
-                
                 data.position = [...data.basePosition];
                 data.branchAngle = childAngle;
             }
             
-            const branchAngle = data.branchAngle !== undefined ? data.branchAngle : 0;
-            
             if (data.children) {
                 data.children.forEach((child, i) => {
-                    calculatePositions(child, data.basePosition, level + 1, branchAngle, data.children.length, i);
+                    calculatePositions(child, data.basePosition, level + 1, data.branchAngle || 0, data.children.length, i);
                 });
             }
             
             return data;
         }
         
-        // Create node mesh
         function createNodeMesh(data, parent = null) {
-            const isCenter = data.level === 0;
             const geometry = new THREE.SphereGeometry(data.size, 32, 32);
-            const material = createMatteMaterial(data.color, isCenter);
+            const material = createMatteMaterial(data.color);
             
             const mesh = new THREE.Mesh(geometry, material);
             mesh.position.set(...data.position);
@@ -2101,25 +2680,23 @@
             mesh.receiveShadow = true;
             mesh.userData = { ...data, parent };
             mesh.userData.isExpanded = false;
-            mesh.userData.originalColor = data.color;
             
             scene.add(mesh);
             
-            // Label
+            // Label with emoji
             const label = document.createElement('div');
             label.className = 'node-label';
-            label.textContent = data.label;
+            const emojiSpan = data.emoji ? `<span class="node-label-emoji">${data.emoji}</span>` : '';
+            label.innerHTML = `${emojiSpan}${data.label}`;
             label.style.display = data.level >= 2 ? 'none' : 'block';
             document.body.appendChild(label);
             mesh.userData.labelDiv = label;
             
-            // Hide level 2+ initially
             if (data.level >= 2) {
                 mesh.visible = false;
                 mesh.userData.collapsed = true;
             }
             
-            // Connection to parent
             if (parent) {
                 const connection = createConnection(parent, data);
                 mesh.userData.connectionLine = connection;
@@ -2143,14 +2720,12 @@
             const parentEdge = parentPos.clone().add(dir.clone().multiplyScalar(parentData.size));
             const childEdge = childPos.clone().sub(dir.clone().multiplyScalar(childData.size));
             
-            // Simple line connection
             const points = [parentEdge, childEdge];
             const geometry = new THREE.BufferGeometry().setFromPoints(points);
             const material = new THREE.LineBasicMaterial({
                 color: new THREE.Color(childData.color),
                 transparent: true,
-                opacity: 0.5,
-                linewidth: 2
+                opacity: 0.5
             });
             
             const line = new THREE.Line(geometry, material);
@@ -2161,8 +2736,7 @@
         }
         
         function updateConnection(childMesh, parentMesh) {
-            if (!childMesh.userData.connectionLine) return;
-            if (!parentMesh) return;
+            if (!childMesh.userData.connectionLine || !parentMesh) return;
             
             const parentPos = parentMesh.position.clone();
             const childPos = childMesh.position.clone();
@@ -2170,56 +2744,40 @@
             
             if (dist > 0.1) {
                 const dir = new THREE.Vector3().subVectors(childPos, parentPos).normalize();
-                const parentSize = parentMesh.userData.size || 0.5;
-                const childSize = childMesh.userData.size || 0.5;
-                const parentEdge = parentPos.clone().add(dir.clone().multiplyScalar(parentSize));
-                const childEdge = childPos.clone().sub(dir.clone().multiplyScalar(childSize));
+                const parentEdge = parentPos.clone().add(dir.clone().multiplyScalar(parentMesh.userData.size || 0.5));
+                const childEdge = childPos.clone().sub(dir.clone().multiplyScalar(childMesh.userData.size || 0.5));
                 
                 const positions = childMesh.userData.connectionLine.geometry.attributes.position.array;
-                positions[0] = parentEdge.x;
-                positions[1] = parentEdge.y;
-                positions[2] = parentEdge.z;
-                positions[3] = childEdge.x;
-                positions[4] = childEdge.y;
-                positions[5] = childEdge.z;
+                positions[0] = parentEdge.x; positions[1] = parentEdge.y; positions[2] = parentEdge.z;
+                positions[3] = childEdge.x; positions[4] = childEdge.y; positions[5] = childEdge.z;
                 childMesh.userData.connectionLine.geometry.attributes.position.needsUpdate = true;
             }
         }
         
-        // Expand/collapse
         function toggleChildren(parentMesh) {
             const parentData = parentMesh.userData;
             if (!parentData.children || parentData.children.length === 0) return;
             
             parentMesh.userData.isExpanded = !parentMesh.userData.isExpanded;
-            
             const childMeshes = parentData.children.map(c => nodes.get(c.id)).filter(Boolean);
             
             if (parentMesh.userData.isExpanded) {
                 audio.expand();
                 
-                const expandDuration = 300;
-                
                 if (parentData.level > 0 && parentData.expandedPosition) {
                     const startPos = parentMesh.position.clone();
                     const targetPos = new THREE.Vector3(...parentData.expandedPosition);
                     const startTime = Date.now();
-                    
                     const grandparentMesh = parentData.parent ? nodes.get(parentData.parent.id) : null;
                     
                     function animateParent() {
-                        const progress = Math.min((Date.now() - startTime) / expandDuration, 1);
+                        const progress = Math.min((Date.now() - startTime) / 300, 1);
                         const ease = 1 - Math.pow(1 - progress, 3);
-                        
                         parentMesh.position.lerpVectors(startPos, targetPos, ease);
-                        
                         if (parentMesh.userData.connectionLine && grandparentMesh) {
                             updateConnection(parentMesh, grandparentMesh);
                         }
-                        
-                        if (progress < 1) {
-                            requestAnimationFrame(animateParent);
-                        }
+                        if (progress < 1) requestAnimationFrame(animateParent);
                     }
                     animateParent();
                 }
@@ -2231,21 +2789,11 @@
                         child.userData.labelDiv.style.display = 'none';
                         
                         const parentPos = parentMesh.position.clone();
-                        
-                        const childData = child.userData;
-                        const childRadius = 3.5 + (childData.level - 2) * 0.4;
-                        
+                        const childRadius = 3.5 + (child.userData.level - 2) * 0.4;
                         const angleSpread = Math.PI * 0.55;
                         const halfSpread = angleSpread / 2;
                         const total = childMeshes.length;
-                        let childAngle;
-                        if (total === 1) {
-                            childAngle = parentData.branchAngle || 0;
-                        } else {
-                            const arcStep = angleSpread / (total - 1);
-                            childAngle = (parentData.branchAngle || 0) - halfSpread + arcStep * i;
-                        }
-                        
+                        let childAngle = total === 1 ? (parentData.branchAngle || 0) : (parentData.branchAngle || 0) - halfSpread + (angleSpread / (total - 1)) * i;
                         const verticalOffset = (i - (total - 1) / 2) * 0.6 * 0.2;
                         
                         const targetPos = new THREE.Vector3(
@@ -2254,32 +2802,23 @@
                             parentPos.z + Math.sin(childAngle) * childRadius
                         );
                         
-                        child.userData.position = [targetPos.x, targetPos.y, targetPos.z];
-                        
                         child.position.copy(parentPos);
                         child.scale.set(0.1, 0.1, 0.1);
-                        child.material.opacity = 0;
                         child.material.transparent = true;
+                        child.material.opacity = 0;
                         
-                        if (child.userData.connectionLine) {
-                            child.userData.connectionLine.visible = false;
-                        }
-                        
-                        const delay = i * 50;
-                        const duration = 400;
+                        if (child.userData.connectionLine) child.userData.connectionLine.visible = false;
                         
                         setTimeout(() => {
                             const startTime = Date.now();
                             const startPos = parentPos.clone();
                             
                             function animate() {
-                                const progress = Math.min((Date.now() - startTime) / duration, 1);
+                                const progress = Math.min((Date.now() - startTime) / 400, 1);
                                 const ease = 1 - Math.pow(1 - progress, 3);
                                 
                                 child.position.lerpVectors(startPos, targetPos, ease);
-                                
-                                const scale = 0.1 + 0.9 * ease;
-                                child.scale.set(scale, scale, scale);
+                                child.scale.setScalar(0.1 + 0.9 * ease);
                                 child.material.opacity = progress;
                                 
                                 if (child.userData.connectionLine && progress > 0.2) {
@@ -2295,34 +2834,29 @@
                                     child.material.opacity = 1;
                                     child.material.transparent = false;
                                     child.userData.labelDiv.style.display = 'block';
-                                    if (child.userData.connectionLine) {
-                                        child.userData.connectionLine.material.opacity = 0.5;
-                                    }
+                                    if (child.userData.connectionLine) child.userData.connectionLine.material.opacity = 0.5;
                                 }
                             }
-                            
                             animate();
-                        }, delay);
+                        }, i * 50);
                     });
                 }, parentData.level > 0 ? 120 : 0);
                 
+                store.expandedNodes.add(parentData.id);
             } else {
                 audio.collapse();
                 
                 childMeshes.forEach(child => {
                     const startPos = child.position.clone();
                     const targetPos = parentMesh.position.clone();
-                    const duration = 250;
                     const startTime = Date.now();
                     
                     function animate() {
-                        const progress = Math.min((Date.now() - startTime) / duration, 1);
+                        const progress = Math.min((Date.now() - startTime) / 250, 1);
                         const ease = progress * progress;
                         
                         child.position.lerpVectors(startPos, targetPos, ease);
-                        
-                        const scale = 1 - 0.9 * ease;
-                        child.scale.set(scale, scale, scale);
+                        child.scale.setScalar(1 - 0.9 * ease);
                         child.material.transparent = true;
                         child.material.opacity = 1 - progress;
                         
@@ -2337,16 +2871,10 @@
                             child.visible = false;
                             child.userData.collapsed = true;
                             child.userData.labelDiv.style.display = 'none';
-                            if (child.userData.connectionLine) {
-                                child.userData.connectionLine.visible = false;
-                            }
-                            
-                            if (child.userData.isExpanded) {
-                                toggleChildren(child);
-                            }
+                            if (child.userData.connectionLine) child.userData.connectionLine.visible = false;
+                            if (child.userData.isExpanded) toggleChildren(child);
                         }
                     }
-                    
                     animate();
                 });
                 
@@ -2356,36 +2884,24 @@
                     setTimeout(() => {
                         const startPos = parentMesh.position.clone();
                         const targetPos = new THREE.Vector3(...parentData.basePosition);
-                        const collapseDuration = 300;
                         const startTime = Date.now();
                         
                         function animateParent() {
-                            const progress = Math.min((Date.now() - startTime) / collapseDuration, 1);
-                            const ease = progress * progress;
-                            
-                            parentMesh.position.lerpVectors(startPos, targetPos, ease);
-                            
+                            const progress = Math.min((Date.now() - startTime) / 300, 1);
+                            parentMesh.position.lerpVectors(startPos, targetPos, progress * progress);
                             if (parentMesh.userData.connectionLine && grandparentMesh) {
                                 updateConnection(parentMesh, grandparentMesh);
                             }
-                            
-                            if (progress < 1) {
-                                requestAnimationFrame(animateParent);
-                            }
+                            if (progress < 1) requestAnimationFrame(animateParent);
                         }
                         animateParent();
                     }, 280);
                 }
-            }
-            
-            if (parentMesh.userData.isExpanded) {
-                store.expandedNodes.add(parentData.id);
-            } else {
+                
                 store.expandedNodes.delete(parentData.id);
             }
         }
         
-        // Selection
         function selectNode(mesh) {
             audio.select();
             
@@ -2400,21 +2916,18 @@
                 toggleChildren(mesh);
             }
             
-            if (selectedNode) {
-                selectedNode.scale.set(1, 1, 1);
-            }
+            if (selectedNode) selectedNode.scale.set(1, 1, 1);
             
             selectedNode = mesh;
             selectedNode.scale.set(1.1, 1.1, 1.1);
             
+            // Update keyboard focus
+            keyboardFocusNode = mesh;
+            
             // Dim other nodes
             const relatedIds = new Set([mesh.userData.id]);
-            if (mesh.userData.children) {
-                mesh.userData.children.forEach(c => relatedIds.add(c.id));
-            }
-            if (mesh.userData.parent) {
-                relatedIds.add(mesh.userData.parent.id);
-            }
+            if (mesh.userData.children) mesh.userData.children.forEach(c => relatedIds.add(c.id));
+            if (mesh.userData.parent) relatedIds.add(mesh.userData.parent.id);
             
             nodes.forEach((n, id) => {
                 if (relatedIds.has(id) && n.visible) {
@@ -2424,14 +2937,9 @@
                     n.material.opacity = 0.2;
                     n.material.transparent = true;
                 }
-                if (n.visible && n.userData.labelDiv) {
-                    n.userData.labelDiv.style.display = 'block';
-                }
             });
             
-            connections.forEach(c => {
-                if (c.visible) c.material.opacity = 0.15;
-            });
+            connections.forEach(c => { if (c.visible) c.material.opacity = 0.15; });
             
             if (mesh.userData.children) {
                 mesh.userData.children.forEach(childData => {
@@ -2442,7 +2950,7 @@
                 });
             }
             
-            // Camera animation
+            // Camera
             const nodePos = mesh.position.clone();
             const isCenter = mesh.userData.level === 0;
             const distance = isCenter ? 26 : (mesh.userData.level === 1 ? 16 : 12);
@@ -2462,27 +2970,22 @@
         function deselectNode() {
             if (selectedNode) {
                 selectedNode.scale.set(1, 1, 1);
-                
                 if (selectedNode.userData.isExpanded && selectedNode.userData.level > 0) {
                     toggleChildren(selectedNode);
                 }
-                
                 selectedNode = null;
             }
+            
+            keyboardFocusNode = nodes.get(store.data.id) || null;
             
             nodes.forEach(n => {
                 if (n.visible) {
                     n.material.opacity = 1;
                     n.material.transparent = false;
-                    if (n.userData.labelDiv) {
-                        n.userData.labelDiv.style.display = 'block';
-                    }
                 }
             });
             
-            connections.forEach(c => {
-                if (c.visible) c.material.opacity = 0.5;
-            });
+            connections.forEach(c => { if (c.visible) c.material.opacity = 0.5; });
             
             animateCamera(
                 camera.position.clone(),
@@ -2496,19 +2999,68 @@
         
         function animateCamera(fromPos, toPos, fromTarget, toTarget, duration = 600) {
             const startTime = Date.now();
-            
             function animate() {
                 const progress = Math.min((Date.now() - startTime) / duration, 1);
                 const ease = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-                
                 camera.position.lerpVectors(fromPos, toPos, ease);
                 controls.target.lerpVectors(fromTarget, toTarget, ease);
                 controls.update();
-                
                 if (progress < 1) requestAnimationFrame(animate);
             }
-            
             animate();
+        }
+        
+        // Keyboard navigation
+        function navigateKeyboard(direction) {
+            audio.navigate();
+            
+            if (!keyboardFocusNode) {
+                keyboardFocusNode = nodes.get(store.data.id);
+            }
+            
+            const currentData = keyboardFocusNode.userData;
+            let nextNode = null;
+            
+            switch (direction) {
+                case 'up': {
+                    // Go to parent
+                    if (currentData.parent) {
+                        nextNode = nodes.get(currentData.parent.id);
+                    }
+                    break;
+                }
+                case 'down': {
+                    // Go to first visible child
+                    if (currentData.children && currentData.children.length > 0) {
+                        const firstChild = nodes.get(currentData.children[0].id);
+                        if (firstChild && firstChild.visible) {
+                            nextNode = firstChild;
+                        }
+                    }
+                    break;
+                }
+                case 'left':
+                case 'right': {
+                    // Navigate between siblings
+                    const siblings = store.getSiblings(currentData.id);
+                    if (siblings.length > 1) {
+                        const currentIndex = siblings.findIndex(s => s.id === currentData.id);
+                        const nextIndex = direction === 'left' 
+                            ? (currentIndex - 1 + siblings.length) % siblings.length
+                            : (currentIndex + 1) % siblings.length;
+                        const nextSibling = nodes.get(siblings[nextIndex].id);
+                        if (nextSibling && nextSibling.visible) {
+                            nextNode = nextSibling;
+                        }
+                    }
+                    break;
+                }
+            }
+            
+            if (nextNode && nextNode !== keyboardFocusNode) {
+                keyboardFocusNode = nextNode;
+                selectNode(nextNode);
+            }
         }
         
         function expandAll() {
@@ -2586,7 +3138,7 @@
         
         function onClick(e) {
             if (isDragging) return;
-            if (e.target.closest('#controls-panel, #info-panel, #search-container, #help-panel, .modal-overlay')) return;
+            if (e.target.closest('#controls-panel, #info-panel, #search-container, #help-panel, #quick-capture, #minimap, #theme-toggle, .modal-overlay')) return;
             
             mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -2646,17 +3198,15 @@
         window.addEventListener('touchstart', onTouchStart, { passive: true });
         window.addEventListener('touchmove', onTouchMove, { passive: true });
         window.addEventListener('touchend', onTouchEnd);
-        
-        // Prevent context menu on canvas for right-click panning
         renderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault());
         
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            minimap.resize();
         });
         
-        // Rebuild scene
         function rebuildScene() {
             const expandedIds = new Set(store.expandedNodes);
             
@@ -2674,10 +3224,12 @@
             nodes.clear();
             connections.length = 0;
             selectedNode = null;
+            keyboardFocusNode = null;
             
             const processedData = calculatePositions(JSON.parse(JSON.stringify(store.data)));
             createNodeMesh(processedData);
             
+            // Restore expanded state
             expandedIds.forEach(nodeId => {
                 const mesh = nodes.get(nodeId);
                 if (mesh && mesh.userData.children && mesh.userData.children.length > 0) {
@@ -2685,12 +3237,9 @@
                     
                     if (mesh.userData.expandedPosition && mesh.userData.level > 0) {
                         mesh.position.set(...mesh.userData.expandedPosition);
-                        
                         if (mesh.userData.connectionLine && mesh.userData.parent) {
                             const parentMesh = nodes.get(mesh.userData.parent.id);
-                            if (parentMesh) {
-                                updateConnection(mesh, parentMesh);
-                            }
+                            if (parentMesh) updateConnection(mesh, parentMesh);
                         }
                     }
                     
@@ -2707,15 +3256,7 @@
                                 const angleSpread = Math.PI * 0.55;
                                 const halfSpread = angleSpread / 2;
                                 const childRadius = 3.5 + (childMesh.userData.level - 2) * 0.4;
-                                
-                                let angle;
-                                if (total === 1) {
-                                    angle = mesh.userData.branchAngle || 0;
-                                } else {
-                                    const arcStep = angleSpread / (total - 1);
-                                    angle = (mesh.userData.branchAngle || 0) - halfSpread + arcStep * i;
-                                }
-                                
+                                let angle = total === 1 ? (mesh.userData.branchAngle || 0) : (mesh.userData.branchAngle || 0) - halfSpread + (angleSpread / (total - 1)) * i;
                                 const verticalOffset = (i - (total - 1) / 2) * 0.6 * 0.2;
                                 
                                 childMesh.position.set(
@@ -2733,6 +3274,8 @@
                     });
                 }
             });
+            
+            keyboardFocusNode = nodes.get(store.data.id);
         }
         
         // Event bus handlers
@@ -2743,13 +3286,18 @@
         bus.on('node:focus', ({ id }) => focusNode(id));
         bus.on('node:added', () => rebuildScene());
         bus.on('node:deleted', () => rebuildScene());
+        bus.on('node:moved', () => rebuildScene());
+        bus.on('node:reordered', () => rebuildScene());
         bus.on('node:updated', ({ node }) => {
             const mesh = nodes.get(node.id);
             if (mesh) {
                 mesh.userData.label = node.label;
+                mesh.userData.emoji = node.emoji;
                 mesh.userData.description = node.description;
                 mesh.userData.color = node.color;
-                mesh.userData.labelDiv.textContent = node.label;
+                
+                const emojiSpan = node.emoji ? `<span class="node-label-emoji">${node.emoji}</span>` : '';
+                mesh.userData.labelDiv.innerHTML = `${emojiSpan}${node.label}`;
                 mesh.material.color = new THREE.Color(node.color);
                 
                 if (selectedNode === mesh) {
@@ -2759,21 +3307,23 @@
         });
         bus.on('data:reset', () => rebuildScene());
         bus.on('data:imported', () => rebuildScene());
+        bus.on('keyboard:navigate', ({ direction }) => navigateKeyboard(direction));
+        bus.on('keyboard:select', () => {
+            if (keyboardFocusNode) selectNode(keyboardFocusNode);
+        });
         
         // Build initial scene
         const processedData = calculatePositions(JSON.parse(JSON.stringify(store.data)));
         createNodeMesh(processedData);
+        keyboardFocusNode = nodes.get(store.data.id);
         
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
             
-            // Gentle rotation for selected node
-            if (selectedNode) {
-                selectedNode.rotation.y += 0.003;
-            }
+            if (selectedNode) selectedNode.rotation.y += 0.003;
             
-            // Update labels with occlusion testing
+            // Update labels with occlusion
             const visibleNodeMeshes = Array.from(nodes.values()).filter(n => n.visible);
             
             nodes.forEach(mesh => {
@@ -2783,22 +3333,17 @@
                     const y = (vector.y * -0.5 + 0.5) * window.innerHeight;
                     const dist = camera.position.distanceTo(mesh.position);
                     
-                    // Check if this node is occluded by other nodes
                     const dirToNode = mesh.position.clone().sub(camera.position).normalize();
                     labelRaycaster.set(camera.position, dirToNode);
                     const intersects = labelRaycaster.intersectObjects(visibleNodeMeshes);
-                    
-                    // If the first intersection is not this node, it's occluded
                     const isOccluded = intersects.length > 0 && intersects[0].object !== mesh;
                     
                     if (isOccluded) {
                         mesh.userData.labelDiv.style.display = 'none';
                     } else {
                         mesh.userData.labelDiv.style.display = 'block';
-                        
                         const scale = Math.max(0.6, Math.min(1.1, 16 / dist));
                         const opacity = Math.max(0.4, Math.min(1, 22 / dist));
-                        
                         mesh.userData.labelDiv.style.left = x + 'px';
                         mesh.userData.labelDiv.style.top = (y + 28) + 'px';
                         mesh.userData.labelDiv.style.transform = `translate(-50%, 0) scale(${scale})`;
@@ -2808,6 +3353,9 @@
                     mesh.userData.labelDiv.style.display = 'none';
                 }
             });
+            
+            // Update minimap
+            minimap.render(Array.from(nodes.entries()), controls.target);
             
             controls.update();
             renderer.render(scene, camera);
@@ -2838,10 +3386,12 @@
             console.log(`
 ╭──────────────────────────────────────╮
 │                                      │
-│   M Y N D                            │
+│   M Y N D  v2.0                      │
 │   Mind Architect                     │
 │                                      │
-│   Think. Connect. Grow.              │
+│   New: Import, Dark Mode, Emojis,    │
+│   Quick Capture, Keyboard Nav,       │
+│   Drag Reorder, Minimap              │
 │                                      │
 ╰──────────────────────────────────────╯
             `);
@@ -2852,8 +3402,7 @@
                 <div class="loader">
                     <div class="loader-text" style="color: #B17457;">Error</div>
                     <p style="color: var(--text-muted); font-size: 13px; margin-top: 16px;">
-                        ${error.message}<br>
-                        Please try refreshing the page.
+                        ${error.message}<br>Please try refreshing.
                     </p>
                 </div>
             `;
