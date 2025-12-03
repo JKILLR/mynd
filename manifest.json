@@ -1,8 +1,8 @@
 {
-  "name": "Cosmic Mind",
-  "short_name": "CosmicMind",
-  "description": "3D interactive mind map in space",
-  "start_url": "/mind-map/",
+  "name": "Mynd",
+  "short_name": "Mynd",
+  "description": "3D interactive mind map",
+  "start_url": "/mynd/",
   "display": "standalone",
   "background_color": "#0a0a12",
   "theme_color": "#6366f1",
