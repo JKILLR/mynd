@@ -341,11 +341,6 @@
             background: var(--bg-secondary);
         }
         
-        .search-result-icon {
-            font-size: 16px;
-            flex-shrink: 0;
-        }
-        
         .search-result-dot {
             width: 10px;
             height: 10px;
@@ -524,43 +519,11 @@
             margin-top: var(--space-2);
         }
         
-        /* ─── Minimap ─── */
-        #minimap {
-            position: fixed;
-            bottom: var(--space-6);
-            right: var(--space-6);
-            width: 160px;
-            height: 160px;
-            background: var(--surface-card);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            overflow: hidden;
-            z-index: var(--z-ui);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        #minimap-canvas {
-            width: 100%;
-            height: 100%;
-        }
-        
-        .minimap-label {
-            position: absolute;
-            top: var(--space-2);
-            left: var(--space-2);
-            font-family: var(--font-mono);
-            font-size: 9px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
         /* ─── Breadcrumb Trail ─── */
         #breadcrumb {
             position: fixed;
-            top: 100px;
-            left: var(--space-6);
+            top: var(--space-6);
+            left: 180px;
             z-index: var(--z-ui);
             display: none;
             align-items: center;
@@ -632,11 +595,6 @@
             display: flex;
             align-items: center;
             gap: var(--space-3);
-            flex-shrink: 0;
-        }
-        
-        .panel-emoji {
-            font-size: 24px;
             flex-shrink: 0;
         }
         
@@ -848,63 +806,6 @@
             min-height: 80px;
         }
         
-        /* Emoji picker */
-        .emoji-input-wrapper {
-            display: flex;
-            gap: var(--space-2);
-        }
-        
-        .emoji-input-wrapper input {
-            flex: 1;
-        }
-        
-        #emoji-picker-btn {
-            width: 44px;
-            height: 44px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-light);
-            border-radius: 10px;
-            font-size: 20px;
-            display: grid;
-            place-items: center;
-            cursor: pointer;
-            transition: all var(--duration-fast);
-        }
-        
-        #emoji-picker-btn:hover {
-            background: var(--bg-tertiary);
-        }
-        
-        .emoji-grid {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: var(--space-1);
-            margin-top: var(--space-2);
-            padding: var(--space-2);
-            background: var(--bg-secondary);
-            border-radius: 10px;
-            display: none;
-        }
-        
-        .emoji-grid.active {
-            display: grid;
-        }
-        
-        .emoji-option {
-            width: 32px;
-            height: 32px;
-            display: grid;
-            place-items: center;
-            font-size: 18px;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: background var(--duration-fast);
-        }
-        
-        .emoji-option:hover {
-            background: var(--bg-tertiary);
-        }
-        
         .color-picker {
             display: flex;
             gap: var(--space-3);
@@ -1064,19 +965,188 @@
             border-radius: 6px;
             box-shadow: var(--shadow-sm);
             backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .node-label-emoji {
-            font-size: 12px;
         }
         
         /* ─── Keyboard Nav Highlight ─── */
         .keyboard-focus {
             outline: 2px dashed var(--desert-clay) !important;
             outline-offset: 4px;
+        }
+        
+        /* ─── Tunnel/Dive Effect ─── */
+        #tunnel-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            pointer-events: none;
+            opacity: 0;
+        }
+        
+        #tunnel-overlay.diving {
+            animation: tunnelDive 1s ease-in-out forwards;
+        }
+        
+        #tunnel-overlay.surfacing {
+            animation: tunnelSurface 0.7s ease-out forwards;
+        }
+        
+        @keyframes tunnelDive {
+            0% { 
+                opacity: 0;
+                background: radial-gradient(circle at center, transparent 0%, transparent 100%);
+            }
+            30% { 
+                opacity: 1;
+                background: radial-gradient(circle at center, transparent 0%, transparent 8%, rgba(0,0,0,0.7) 25%, rgba(0,0,0,0.95) 100%);
+            }
+            50% {
+                opacity: 1;
+                background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.9) 5%, rgba(0,0,0,1) 20%);
+            }
+            70% {
+                opacity: 1;
+                background: radial-gradient(circle at center, transparent 0%, transparent 15%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0.95) 100%);
+            }
+            100% { 
+                opacity: 0;
+                background: radial-gradient(circle at center, transparent 0%, transparent 100%);
+            }
+        }
+        
+        @keyframes tunnelSurface {
+            0% { 
+                opacity: 0;
+            }
+            30% { 
+                opacity: 1;
+                background: radial-gradient(circle at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 20%, transparent 50%);
+            }
+            60% {
+                opacity: 1;
+                background: radial-gradient(circle at center, rgba(0,0,0,0.6) 0%, transparent 40%);
+            }
+            100% { 
+                opacity: 0;
+            }
+        }
+        
+        /* Speed lines during dive */
+        #tunnel-overlay::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-conic-gradient(
+                from 0deg at 50% 50%,
+                transparent 0deg,
+                rgba(255,255,255,0.03) 1deg,
+                transparent 2deg
+            );
+            opacity: 0;
+            animation: none;
+        }
+        
+        #tunnel-overlay.diving::before {
+            animation: speedLines 1s ease-in-out forwards;
+        }
+        
+        @keyframes speedLines {
+            0% { opacity: 0; transform: scale(1); }
+            30% { opacity: 1; transform: scale(1.5); }
+            50% { opacity: 0.8; transform: scale(3); }
+            100% { opacity: 0; transform: scale(5); }
+        }
+        
+        /* Depth indicator */
+        #depth-indicator {
+            position: fixed;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: var(--z-ui);
+            display: none;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-2) var(--space-4);
+            background: var(--surface-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+        }
+        
+        #depth-indicator.active {
+            display: flex;
+            animation: slideDown var(--duration-normal) var(--ease-out);
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        .depth-back-btn {
+            width: 32px;
+            height: 32px;
+            display: grid;
+            place-items: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 16px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--duration-fast);
+        }
+        
+        .depth-back-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .depth-path {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .depth-path-item {
+            padding: var(--space-1) var(--space-2);
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all var(--duration-fast);
+        }
+        
+        .depth-path-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .depth-path-item.current {
+            background: var(--graphite);
+            color: var(--milk);
+        }
+        
+        [data-theme="dark"] .depth-path-item.current {
+            background: var(--desert-clay);
+            color: white;
+        }
+        
+        .depth-path-separator {
+            color: var(--text-muted);
+            font-size: 10px;
+        }
+        
+        .depth-hint {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-muted);
+            padding: var(--space-1) var(--space-2);
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            margin-left: var(--space-2);
         }
         
         /* ─── Loading State ─── */
@@ -1236,10 +1306,6 @@
                 display: none;
             }
             
-            #minimap {
-                display: none;
-            }
-            
             #quick-capture {
                 bottom: 80px;
             }
@@ -1288,8 +1354,18 @@
     <!-- Textured Background -->
     <div id="background" aria-hidden="true"></div>
     
+    <!-- Tunnel Effect Overlay -->
+    <div id="tunnel-overlay" aria-hidden="true"></div>
+    
     <!-- Three.js Canvas -->
     <div id="canvas-container" role="application" aria-label="3D Mind Map" tabindex="0"></div>
+    
+    <!-- Depth Indicator (shown when diving) -->
+    <div id="depth-indicator">
+        <button class="depth-back-btn" id="depth-back-btn" aria-label="Go back up">←</button>
+        <div class="depth-path" id="depth-path"></div>
+        <span class="depth-hint">Esc to surface</span>
+    </div>
     
     <!-- Header/Brand -->
     <header id="header">
@@ -1365,11 +1441,12 @@
     <aside id="help-panel" aria-label="Keyboard shortcuts">
         <div class="help-title">Shortcuts</div>
         <div class="help-item"><span class="help-key">Click</span> Select node</div>
+        <div class="help-item"><span class="help-key">2×Click</span> Dive into node</div>
+        <div class="help-item"><span class="help-key">Enter</span> Dive into selected</div>
+        <div class="help-item"><span class="help-key">Esc</span> Surface / Deselect</div>
         <div class="help-item"><span class="help-key">Drag</span> Rotate view</div>
         <div class="help-item"><span class="help-key">Right</span> Pan view</div>
-        <div class="help-item"><span class="help-key">⇧+Drag</span> Pan view</div>
         <div class="help-item"><span class="help-key">Scroll</span> Zoom</div>
-        <div class="help-item"><span class="help-key">Esc</span> Deselect</div>
         <div class="help-item"><span class="help-key">⌘K</span> Search</div>
         <div class="help-item"><span class="help-key">Q</span> Quick capture</div>
         <div class="help-item"><span class="help-key">N</span> New node</div>
@@ -1387,16 +1464,9 @@
         <div class="quick-capture-hint">Press Esc to close • Adding to selected node or root</div>
     </div>
     
-    <!-- Minimap -->
-    <div id="minimap">
-        <span class="minimap-label">Overview</span>
-        <canvas id="minimap-canvas"></canvas>
-    </div>
-    
     <!-- Info Panel -->
     <aside id="info-panel" role="complementary" aria-label="Selected node details">
         <div class="panel-header">
-            <span class="panel-emoji" id="panel-emoji"></span>
             <div class="panel-color-dot" id="panel-color-dot"></div>
             <h2 id="node-title"></h2>
         </div>
@@ -1417,11 +1487,7 @@
             <h3 id="modal-title">Add Node</h3>
             <div class="form-group">
                 <label for="node-name-input">Name</label>
-                <div class="emoji-input-wrapper">
-                    <input type="text" id="node-name-input" placeholder="Enter node name..." maxlength="40" autofocus>
-                    <button id="emoji-picker-btn" type="button">😊</button>
-                </div>
-                <div class="emoji-grid" id="emoji-grid"></div>
+                <input type="text" id="node-name-input" placeholder="Enter node name..." maxlength="40" autofocus>
             </div>
             <div class="form-group">
                 <label for="node-desc-input">Description (optional)</label>
@@ -1509,61 +1575,56 @@
     // MODULE: Store
     // ═══════════════════════════════════════════════════════════════════════════
     
-    const STORAGE_KEY = 'mynd-mind-map-v4';
+    const STORAGE_KEY = 'mynd-mind-map-v5';
     
     const defaultData = {
         id: 'mynd',
         label: 'MYND',
-        emoji: '🧠',
         color: '#4A4947',
         description: 'Your mind map. Click to explore, add thoughts, and build connections.',
         children: [
             {
                 id: 'ideas',
                 label: 'Ideas',
-                emoji: '💡',
                 color: '#D4A088',
                 description: 'Creative sparks and inspirations',
                 children: [
-                    { id: 'idea-1', label: 'Dreams', emoji: '✨', color: '#C89080', description: 'Aspirations to explore' },
-                    { id: 'idea-2', label: 'Concepts', emoji: '🎨', color: '#C89080', description: 'Abstract thoughts' },
-                    { id: 'idea-3', label: 'Visions', emoji: '🔮', color: '#C89080', description: 'Future possibilities' }
+                    { id: 'idea-1', label: 'Dreams', color: '#C89080', description: 'Aspirations to explore' },
+                    { id: 'idea-2', label: 'Concepts', color: '#C89080', description: 'Abstract thoughts' },
+                    { id: 'idea-3', label: 'Visions', color: '#C89080', description: 'Future possibilities' }
                 ]
             },
             {
                 id: 'projects',
                 label: 'Projects',
-                emoji: '🚀',
                 color: '#A8B89E',
                 description: 'Active work and initiatives',
                 children: [
-                    { id: 'proj-1', label: 'Current', emoji: '⚡', color: '#8FA888', description: 'In progress now' },
-                    { id: 'proj-2', label: 'Planned', emoji: '📋', color: '#8FA888', description: 'Coming soon' },
-                    { id: 'proj-3', label: 'Archive', emoji: '📦', color: '#8FA888', description: 'Completed work' }
+                    { id: 'proj-1', label: 'Current', color: '#8FA888', description: 'In progress now' },
+                    { id: 'proj-2', label: 'Planned', color: '#8FA888', description: 'Coming soon' },
+                    { id: 'proj-3', label: 'Archive', color: '#8FA888', description: 'Completed work' }
                 ]
             },
             {
                 id: 'knowledge',
                 label: 'Knowledge',
-                emoji: '📚',
                 color: '#9EACAD',
                 description: 'Learnings and insights',
                 children: [
-                    { id: 'know-1', label: 'Skills', emoji: '🛠️', color: '#889898', description: 'Abilities to develop' },
-                    { id: 'know-2', label: 'Notes', emoji: '📝', color: '#889898', description: 'Quick captures' },
-                    { id: 'know-3', label: 'Links', emoji: '🔗', color: '#889898', description: 'Resources to remember' }
+                    { id: 'know-1', label: 'Skills', color: '#889898', description: 'Abilities to develop' },
+                    { id: 'know-2', label: 'Notes', color: '#889898', description: 'Quick captures' },
+                    { id: 'know-3', label: 'Links', color: '#889898', description: 'Resources to remember' }
                 ]
             },
             {
                 id: 'life',
                 label: 'Life',
-                emoji: '🌱',
                 color: '#E5DCC8',
                 description: 'Personal domains',
                 children: [
-                    { id: 'life-1', label: 'Health', emoji: '💪', color: '#D9C4A8', description: 'Wellbeing focus' },
-                    { id: 'life-2', label: 'Goals', emoji: '🎯', color: '#D9C4A8', description: 'Targets to reach' },
-                    { id: 'life-3', label: 'Memories', emoji: '📸', color: '#D9C4A8', description: 'Moments to cherish' }
+                    { id: 'life-1', label: 'Health', color: '#D9C4A8', description: 'Wellbeing focus' },
+                    { id: 'life-2', label: 'Goals', color: '#D9C4A8', description: 'Targets to reach' },
+                    { id: 'life-3', label: 'Memories', color: '#D9C4A8', description: 'Moments to cherish' }
                 ]
             }
         ]
@@ -1634,7 +1695,6 @@
             const newNode = {
                 id: nodeData.id || `node-${Date.now()}`,
                 label: nodeData.label,
-                emoji: nodeData.emoji || '',
                 color: nodeData.color,
                 description: nodeData.description || '',
                 children: []
@@ -1764,8 +1824,7 @@
             const q = query.toLowerCase();
             return this.getAllNodes().filter(n => 
                 n.label.toLowerCase().includes(q) || 
-                (n.description && n.description.toLowerCase().includes(q)) ||
-                (n.emoji && n.emoji.includes(q))
+                (n.description && n.description.toLowerCase().includes(q))
             );
         }
         
@@ -1891,109 +1950,19 @@
         add() { this.playTone(700, 0.1, 'sine', 0.02); }
         error() { this.playTone(200, 0.15, 'triangle', 0.02); }
         navigate() { this.playTone(800, 0.05, 'sine', 0.01); }
+        dive() { 
+            this.playTone(300, 0.15, 'sine', 0.025); 
+            setTimeout(() => this.playTone(400, 0.12, 'sine', 0.02), 100);
+            setTimeout(() => this.playTone(500, 0.1, 'sine', 0.015), 180);
+        }
+        surface() {
+            this.playTone(500, 0.1, 'sine', 0.02);
+            setTimeout(() => this.playTone(400, 0.12, 'sine', 0.018), 80);
+            setTimeout(() => this.playTone(300, 0.15, 'sine', 0.015), 150);
+        }
     }
     
     const audio = new AudioEngine();
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // MODULE: Minimap
-    // ═══════════════════════════════════════════════════════════════════════════
-    
-    class Minimap {
-        constructor() {
-            this.canvas = document.getElementById('minimap-canvas');
-            this.ctx = this.canvas.getContext('2d');
-            this.resize();
-        }
-        
-        resize() {
-            const rect = this.canvas.parentElement.getBoundingClientRect();
-            this.canvas.width = rect.width * 2;
-            this.canvas.height = rect.height * 2;
-            this.ctx.scale(2, 2);
-        }
-        
-        render(nodes, cameraTarget) {
-            const { ctx, canvas } = this;
-            const w = canvas.width / 2;
-            const h = canvas.height / 2;
-            
-            // Clear
-            ctx.clearRect(0, 0, w, h);
-            
-            // Background
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            ctx.fillStyle = isDark ? '#1a1a1a' : '#F9F7F0';
-            ctx.fillRect(0, 0, w, h);
-            
-            // Calculate bounds
-            let minX = Infinity, maxX = -Infinity;
-            let minZ = Infinity, maxZ = -Infinity;
-            
-            nodes.forEach(([id, mesh]) => {
-                if (mesh.visible) {
-                    minX = Math.min(minX, mesh.position.x);
-                    maxX = Math.max(maxX, mesh.position.x);
-                    minZ = Math.min(minZ, mesh.position.z);
-                    maxZ = Math.max(maxZ, mesh.position.z);
-                }
-            });
-            
-            const padding = 20;
-            const rangeX = Math.max(maxX - minX, 1);
-            const rangeZ = Math.max(maxZ - minZ, 1);
-            const scale = Math.min((w - padding * 2) / rangeX, (h - padding * 2) / rangeZ);
-            
-            const offsetX = (w - rangeX * scale) / 2 - minX * scale;
-            const offsetZ = (h - rangeZ * scale) / 2 - minZ * scale;
-            
-            // Draw connections
-            ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
-            ctx.lineWidth = 1;
-            
-            nodes.forEach(([id, mesh]) => {
-                if (mesh.visible && mesh.userData.parent) {
-                    const parentMesh = nodes.find(([pid]) => pid === mesh.userData.parent.id);
-                    if (parentMesh && parentMesh[1].visible) {
-                        ctx.beginPath();
-                        ctx.moveTo(parentMesh[1].position.x * scale + offsetX, parentMesh[1].position.z * scale + offsetZ);
-                        ctx.lineTo(mesh.position.x * scale + offsetX, mesh.position.z * scale + offsetZ);
-                        ctx.stroke();
-                    }
-                }
-            });
-            
-            // Draw nodes
-            nodes.forEach(([id, mesh]) => {
-                if (mesh.visible) {
-                    const x = mesh.position.x * scale + offsetX;
-                    const z = mesh.position.z * scale + offsetZ;
-                    const size = Math.max(3, mesh.userData.size * 2);
-                    
-                    ctx.beginPath();
-                    ctx.arc(x, z, size, 0, Math.PI * 2);
-                    ctx.fillStyle = mesh.userData.color || '#888';
-                    ctx.fill();
-                    
-                    // Selected highlight
-                    if (mesh.userData.id === store.selectedNodeId) {
-                        ctx.strokeStyle = isDark ? '#fff' : '#000';
-                        ctx.lineWidth = 2;
-                        ctx.stroke();
-                    }
-                }
-            });
-            
-            // Draw camera viewport indicator
-            ctx.strokeStyle = isDark ? 'rgba(177, 116, 87, 0.6)' : 'rgba(177, 116, 87, 0.4)';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([4, 4]);
-            const camX = cameraTarget.x * scale + offsetX;
-            const camZ = cameraTarget.z * scale + offsetZ;
-            ctx.strokeRect(camX - 15, camZ - 15, 30, 30);
-            ctx.setLineDash([]);
-        }
-    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // MODULE: UIController
@@ -2008,7 +1977,6 @@
                 nodeDetails: document.getElementById('node-details'),
                 nodeMeta: document.getElementById('node-meta'),
                 panelColorDot: document.getElementById('panel-color-dot'),
-                panelEmoji: document.getElementById('panel-emoji'),
                 breadcrumb: document.getElementById('breadcrumb'),
                 breadcrumbPath: document.getElementById('breadcrumb-path'),
                 searchInput: document.getElementById('search-input'),
@@ -2021,7 +1989,6 @@
                 helpPanel: document.getElementById('help-panel'),
                 quickCapture: document.getElementById('quick-capture'),
                 quickCaptureInput: document.getElementById('quick-capture-input'),
-                emojiGrid: document.getElementById('emoji-grid'),
                 importInput: document.getElementById('import-input')
             };
             
@@ -2029,31 +1996,9 @@
             this.modalParentId = null;
             this.modalEditId = null;
             this.selectedColor = '#D4A088';
-            this.selectedEmoji = '';
             this.searchResultIndex = -1;
             
-            this.emojis = ['💡', '🚀', '📚', '🎯', '✨', '🔮', '⚡', '📋', '📦', '🛠️', '📝', '🔗', '🌱', '💪', '📸', '🎨', '💭', '🧠', '❤️', '⭐', '🔥', '💎', '🎵', '🌟', '🏆', '🎪', '🌈', '☀️', '🌙', '🍀', '🎁', '🔔'];
-            
             this.bindEvents();
-            this.setupEmojiPicker();
-        }
-        
-        setupEmojiPicker() {
-            this.elements.emojiGrid.innerHTML = this.emojis.map(e => 
-                `<div class="emoji-option" data-emoji="${e}">${e}</div>`
-            ).join('');
-            
-            this.elements.emojiGrid.addEventListener('click', (e) => {
-                if (e.target.classList.contains('emoji-option')) {
-                    this.selectedEmoji = e.target.dataset.emoji;
-                    document.getElementById('emoji-picker-btn').textContent = this.selectedEmoji;
-                    this.elements.emojiGrid.classList.remove('active');
-                }
-            });
-            
-            document.getElementById('emoji-picker-btn').addEventListener('click', () => {
-                this.elements.emojiGrid.classList.toggle('active');
-            });
         }
         
         bindEvents() {
@@ -2061,7 +2006,10 @@
             document.getElementById('reset-view-btn').addEventListener('click', () => bus.emit('camera:reset'));
             document.getElementById('expand-all-btn').addEventListener('click', () => bus.emit('nodes:expandAll'));
             document.getElementById('collapse-all-btn').addEventListener('click', () => bus.emit('nodes:collapseAll'));
-            document.getElementById('add-root-btn').addEventListener('click', () => this.openModal('add', store.data.id));
+            document.getElementById('add-root-btn').addEventListener('click', () => {
+                const currentContext = window.getCurrentContext ? window.getCurrentContext() : store.data.id;
+                this.openModal('add', currentContext);
+            });
             document.getElementById('export-btn').addEventListener('click', () => this.exportMap());
             document.getElementById('help-btn').addEventListener('click', () => this.toggleHelp());
             document.getElementById('theme-toggle').addEventListener('click', () => themeManager.toggle());
@@ -2154,7 +2102,8 @@
             
             switch (e.key) {
                 case 'Escape':
-                    bus.emit('ui:deselect');
+                    // First try to surface, then deselect
+                    bus.emit('ui:surface');
                     this.closeModal();
                     this.toggleQuickCapture(false);
                     break;
@@ -2172,7 +2121,8 @@
                     break;
                 case 'n':
                     if (!e.metaKey && !e.ctrlKey) {
-                        const parentId = store.selectedNodeId || store.data.id;
+                        const currentContext = window.getCurrentContext ? window.getCurrentContext() : store.data.id;
+                        const parentId = store.selectedNodeId || currentContext;
                         this.openModal('add', parentId);
                     }
                     break;
@@ -2213,7 +2163,8 @@
                     break;
                 case 'Enter':
                     if (store.selectedNodeId) {
-                        bus.emit('keyboard:select');
+                        // Enter dives into the selected node
+                        bus.emit('node:tryDive', { id: store.selectedNodeId });
                     }
                     break;
             }
@@ -2236,13 +2187,14 @@
             const value = this.elements.quickCaptureInput.value.trim();
             if (!value) return;
             
-            const parentId = store.selectedNodeId || store.data.id;
+            // Use selected node, or current context, or root
+            const currentContext = window.getCurrentContext ? window.getCurrentContext() : store.data.id;
+            const parentId = store.selectedNodeId || currentContext;
             const parent = store.findNode(parentId);
             
             const newNode = store.addNode(parentId, {
                 label: value,
                 color: parent?.color || '#D4A088',
-                emoji: '',
                 description: ''
             });
             
@@ -2270,7 +2222,7 @@
                     const path = store.getPath(node.id).map(n => n.label).join(' › ');
                     return `
                         <div class="search-result" data-id="${node.id}" data-index="${i}">
-                            ${node.emoji ? `<span class="search-result-icon">${node.emoji}</span>` : `<div class="search-result-dot" style="background: ${node.color}"></div>`}
+                            <div class="search-result-dot" style="background: ${node.color}"></div>
                             <span class="search-result-label">${node.label}</span>
                             <span class="search-result-path">${path}</span>
                         </div>
@@ -2331,9 +2283,6 @@
             
             this.elements.nodeTitle.textContent = nodeData.label;
             this.elements.panelColorDot.style.background = nodeData.color;
-            this.elements.panelEmoji.textContent = nodeData.emoji || '';
-            this.elements.panelEmoji.style.display = nodeData.emoji ? 'block' : 'none';
-            this.elements.panelColorDot.style.display = nodeData.emoji ? 'none' : 'block';
             
             let details = '';
             if (nodeData.description) {
@@ -2348,7 +2297,34 @@
             this.elements.nodeDetails.innerHTML = details;
             
             const childCount = nodeData.children?.length || 0;
-            this.elements.nodeMeta.innerHTML = `<span class="meta-tag">${childCount} nodes</span>`;
+            let metaHtml = `<span class="meta-tag">${childCount} nodes</span>`;
+            this.elements.nodeMeta.innerHTML = metaHtml;
+            
+            // Update panel actions based on whether node has children
+            const panelActions = document.querySelector('.panel-actions');
+            if (childCount > 0) {
+                panelActions.innerHTML = `
+                    <button class="action-btn secondary" id="edit-node-btn">Edit</button>
+                    <button class="action-btn secondary" id="dive-node-btn" style="background: var(--desert-clay); color: white; border: none;">↓ Dive</button>
+                    <button class="action-btn primary" id="add-node-btn">+ Add</button>
+                `;
+                document.getElementById('dive-node-btn').addEventListener('click', () => {
+                    bus.emit('node:tryDive', { id: nodeData.id });
+                });
+            } else {
+                panelActions.innerHTML = `
+                    <button class="action-btn secondary" id="edit-node-btn">Edit</button>
+                    <button class="action-btn primary" id="add-node-btn">+ Add</button>
+                `;
+            }
+            
+            // Re-bind edit and add buttons
+            document.getElementById('add-node-btn').addEventListener('click', () => {
+                if (store.selectedNodeId) this.openModal('add', store.selectedNodeId);
+            });
+            document.getElementById('edit-node-btn').addEventListener('click', () => {
+                if (store.selectedNodeId) this.openModal('edit', store.selectedNodeId);
+            });
             
             this.elements.infoPanel.classList.add('active');
             this.updateBreadcrumb(nodeData.id);
@@ -2369,8 +2345,7 @@
             
             this.elements.breadcrumbPath.innerHTML = path.map((node, i) => {
                 const isLast = i === path.length - 1;
-                const emoji = node.emoji ? `${node.emoji} ` : '';
-                return `<span class="breadcrumb-item ${isLast ? 'current' : ''}">${emoji}${node.label}</span>` +
+                return `<span class="breadcrumb-item ${isLast ? 'current' : ''}">${node.label}</span>` +
                     (isLast ? '' : '<span class="breadcrumb-separator">›</span>');
             }).join('');
             
@@ -2379,7 +2354,6 @@
         
         openModal(mode, targetId) {
             this.modalMode = mode;
-            this.elements.emojiGrid.classList.remove('active');
             
             if (mode === 'add') {
                 this.modalParentId = targetId;
@@ -2388,8 +2362,6 @@
                 document.getElementById('modal-submit').textContent = 'Add Node';
                 this.elements.nameInput.value = '';
                 this.elements.descInput.value = '';
-                this.selectedEmoji = '';
-                document.getElementById('emoji-picker-btn').textContent = '😊';
                 
                 const parent = store.findNode(targetId);
                 if (parent) {
@@ -2411,8 +2383,6 @@
                 this.elements.nameInput.value = node.label;
                 this.elements.descInput.value = node.description || '';
                 this.selectedColor = node.color;
-                this.selectedEmoji = node.emoji || '';
-                document.getElementById('emoji-picker-btn').textContent = node.emoji || '😊';
                 
                 document.querySelectorAll('.color-option').forEach(opt => {
                     const isSelected = opt.dataset.color === node.color;
@@ -2427,7 +2397,6 @@
         
         closeModal() {
             this.elements.modal.classList.remove('active');
-            this.elements.emojiGrid.classList.remove('active');
             this.modalParentId = null;
             this.modalEditId = null;
         }
@@ -2443,7 +2412,6 @@
             if (this.modalMode === 'add' && this.modalParentId) {
                 const newNode = store.addNode(this.modalParentId, {
                     label: name,
-                    emoji: this.selectedEmoji,
                     color: this.selectedColor,
                     description: this.elements.descInput.value.trim()
                 });
@@ -2455,7 +2423,6 @@
             } else if (this.modalMode === 'edit' && this.modalEditId) {
                 store.updateNode(this.modalEditId, {
                     label: name,
-                    emoji: this.selectedEmoji,
                     color: this.selectedColor,
                     description: this.elements.descInput.value.trim()
                 });
@@ -2604,8 +2571,416 @@
         let selectedNode = null;
         let keyboardFocusNode = null;
         
-        // Initialize minimap
-        const minimap = new Minimap();
+        // Tunnel/Dive state
+        let currentContextId = store.data.id; // The node we're currently "inside"
+        let isDiving = false;
+        const tunnelOverlay = document.getElementById('tunnel-overlay');
+        const depthIndicator = document.getElementById('depth-indicator');
+        const depthPath = document.getElementById('depth-path');
+        
+        function updateDepthIndicator() {
+            const breadcrumb = document.getElementById('breadcrumb');
+            
+            if (currentContextId === store.data.id) {
+                depthIndicator.classList.remove('active');
+                // Restore breadcrumb visibility when at root
+                return;
+            }
+            
+            // Hide breadcrumb when we're in a dived context (depth indicator takes over)
+            breadcrumb.classList.remove('active');
+            
+            const path = store.getPath(currentContextId);
+            depthPath.innerHTML = path.map((node, i) => {
+                const isLast = i === path.length - 1;
+                return `<span class="depth-path-item ${isLast ? 'current' : ''}" data-id="${node.id}">${node.label}</span>` +
+                    (isLast ? '' : '<span class="depth-path-separator">›</span>');
+            }).join('');
+            
+            // Add click handlers to path items
+            depthPath.querySelectorAll('.depth-path-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetId = item.dataset.id;
+                    if (targetId !== currentContextId) {
+                        surfaceToNode(targetId);
+                    }
+                });
+            });
+            
+            depthIndicator.classList.add('active');
+        }
+        
+        function diveIntoNode(mesh) {
+            if (isDiving) return;
+            if (!mesh.userData.children || mesh.userData.children.length === 0) return;
+            
+            isDiving = true;
+            audio.dive();
+            
+            const targetNode = mesh.userData;
+            const targetId = targetNode.id;
+            
+            // Trigger tunnel animation
+            tunnelOverlay.classList.remove('surfacing');
+            tunnelOverlay.classList.add('diving');
+            
+            // Store start states
+            const nodePos = mesh.position.clone();
+            const cameraStartPos = camera.position.clone();
+            const startTarget = controls.target.clone();
+            const startFOV = camera.fov;
+            
+            // Calculate direction from camera to node
+            const dirToNode = nodePos.clone().sub(cameraStartPos).normalize();
+            
+            const startTime = Date.now();
+            const duration = 1000; // Slightly longer for smoother feel
+            
+            // Scale up target node during approach
+            const originalScale = mesh.scale.clone();
+            
+            function animateDive() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Custom easing: slow start, fast through middle, slow end
+                let ease;
+                if (progress < 0.3) {
+                    // Slow acceleration
+                    ease = (progress / 0.3) * (progress / 0.3) * 0.15;
+                } else if (progress < 0.7) {
+                    // Fast through the middle
+                    const midProgress = (progress - 0.3) / 0.4;
+                    ease = 0.15 + midProgress * 0.7;
+                } else {
+                    // Slow deceleration
+                    const endProgress = (progress - 0.7) / 0.3;
+                    ease = 0.85 + (1 - Math.pow(1 - endProgress, 2)) * 0.15;
+                }
+                
+                // Phase 1 (0-40%): Approach the node
+                // Phase 2 (40-60%): Pass through (darkness)
+                // Phase 3 (60-100%): Emerge into new space
+                
+                if (progress < 0.4) {
+                    const subProgress = progress / 0.4;
+                    const subEase = subProgress * subProgress;
+                    
+                    // Camera approaches node
+                    const approachTarget = nodePos.clone().add(dirToNode.clone().multiplyScalar(-2));
+                    camera.position.lerpVectors(cameraStartPos, approachTarget, subEase);
+                    controls.target.lerpVectors(startTarget, nodePos, subEase);
+                    
+                    // Narrow FOV for tunnel effect
+                    camera.fov = startFOV - subEase * 15;
+                    camera.updateProjectionMatrix();
+                    
+                    // Scale up target node
+                    const scale = 1 + subEase * 0.5;
+                    mesh.scale.set(scale, scale, scale);
+                    
+                } else if (progress < 0.6) {
+                    // Through the node - camera very close, FOV narrowest
+                    const subProgress = (progress - 0.4) / 0.2;
+                    
+                    camera.position.copy(nodePos.clone().add(dirToNode.clone().multiplyScalar(-1 + subProgress * 3)));
+                    controls.target.copy(nodePos.clone().add(dirToNode.clone().multiplyScalar(subProgress * 5)));
+                    
+                    camera.fov = startFOV - 15 + subProgress * 5;
+                    camera.updateProjectionMatrix();
+                    
+                } else {
+                    // Emerge into new space
+                    const subProgress = (progress - 0.6) / 0.4;
+                    const subEase = 1 - Math.pow(1 - subProgress, 3);
+                    
+                    // Camera settles into new position
+                    const emergeCamStart = nodePos.clone().add(new THREE.Vector3(0, 2, 2));
+                    const finalCamPos = new THREE.Vector3(0, 10, 28);
+                    camera.position.lerpVectors(emergeCamStart, finalCamPos, subEase);
+                    
+                    const emergeTargetStart = nodePos.clone().add(new THREE.Vector3(0, 0, 5));
+                    controls.target.lerpVectors(emergeTargetStart, new THREE.Vector3(0, 0, 0), subEase);
+                    
+                    // FOV returns to normal
+                    camera.fov = startFOV - 10 + subEase * 10;
+                    camera.updateProjectionMatrix();
+                }
+                
+                controls.update();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateDive);
+                } else {
+                    // Animation complete - rebuild scene
+                    camera.fov = startFOV;
+                    camera.updateProjectionMatrix();
+                    currentContextId = targetId;
+                    rebuildSceneAtContext(targetId);
+                    isDiving = false;
+                    tunnelOverlay.classList.remove('diving');
+                    updateDepthIndicator();
+                    bus.emit('node:dived', { id: targetId });
+                }
+            }
+            
+            // Fade out non-target nodes with staggered timing
+            const nodeArray = Array.from(nodes.entries());
+            nodeArray.forEach(([id, n], index) => {
+                if (id !== targetNode.id) {
+                    setTimeout(() => {
+                        n.material.transparent = true;
+                        n.material.opacity = 0.1;
+                        if (n.userData.labelDiv) n.userData.labelDiv.style.opacity = '0';
+                    }, index * 20);
+                }
+            });
+            connections.forEach((c, i) => {
+                setTimeout(() => {
+                    c.material.opacity = 0.02;
+                }, i * 15);
+            });
+            
+            animateDive();
+        }
+        
+        function surfaceFromNode() {
+            if (isDiving) return;
+            if (currentContextId === store.data.id) return; // Already at root
+            
+            isDiving = true;
+            audio.surface();
+            
+            // Find parent of current context
+            const parent = store.findParent(currentContextId);
+            const targetId = parent ? parent.id : store.data.id;
+            
+            // Trigger surface animation
+            tunnelOverlay.classList.remove('diving');
+            tunnelOverlay.classList.add('surfacing');
+            
+            const cameraStartPos = camera.position.clone();
+            const startTarget = controls.target.clone();
+            const startFOV = camera.fov;
+            
+            const startTime = Date.now();
+            const duration = 700;
+            
+            // Fade out current nodes first
+            nodes.forEach(n => {
+                n.material.transparent = true;
+            });
+            
+            function animateSurface() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Ease out cubic
+                const ease = 1 - Math.pow(1 - progress, 3);
+                
+                // Phase 1 (0-30%): Pull back and zoom out
+                // Phase 2 (30-100%): Emerge into parent space
+                
+                if (progress < 0.3) {
+                    const subProgress = progress / 0.3;
+                    
+                    // Camera pulls back
+                    camera.position.lerpVectors(cameraStartPos, cameraStartPos.clone().add(new THREE.Vector3(0, 5, 10)), subProgress);
+                    
+                    // Widen FOV slightly
+                    camera.fov = startFOV + subProgress * 10;
+                    camera.updateProjectionMatrix();
+                    
+                    // Fade out nodes
+                    nodes.forEach(n => {
+                        n.material.opacity = 1 - subProgress * 0.8;
+                    });
+                    
+                } else {
+                    const subProgress = (progress - 0.3) / 0.7;
+                    const subEase = 1 - Math.pow(1 - subProgress, 2);
+                    
+                    // Settle into final position
+                    const midPos = cameraStartPos.clone().add(new THREE.Vector3(0, 5, 10));
+                    camera.position.lerpVectors(midPos, new THREE.Vector3(0, 10, 28), subEase);
+                    controls.target.lerpVectors(startTarget, new THREE.Vector3(0, 0, 0), subEase);
+                    
+                    // FOV returns to normal
+                    camera.fov = startFOV + 10 - subEase * 10;
+                    camera.updateProjectionMatrix();
+                }
+                
+                controls.update();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateSurface);
+                } else {
+                    camera.fov = startFOV;
+                    camera.updateProjectionMatrix();
+                    currentContextId = targetId;
+                    rebuildSceneAtContext(targetId);
+                    isDiving = false;
+                    tunnelOverlay.classList.remove('surfacing');
+                    updateDepthIndicator();
+                    bus.emit('node:surfaced', { id: targetId });
+                }
+            }
+            
+            animateSurface();
+        }
+        
+        function surfaceToNode(targetId) {
+            if (isDiving) return;
+            if (targetId === currentContextId) return;
+            
+            isDiving = true;
+            audio.surface();
+            
+            tunnelOverlay.classList.remove('diving');
+            tunnelOverlay.classList.add('surfacing');
+            
+            const startTime = Date.now();
+            const duration = 700;
+            const cameraStartPos = camera.position.clone();
+            const startTarget = controls.target.clone();
+            const startFOV = camera.fov;
+            
+            // Fade out current nodes
+            nodes.forEach(n => {
+                n.material.transparent = true;
+            });
+            
+            function animateSurface() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = 1 - Math.pow(1 - progress, 3);
+                
+                if (progress < 0.3) {
+                    const subProgress = progress / 0.3;
+                    camera.position.lerpVectors(cameraStartPos, cameraStartPos.clone().add(new THREE.Vector3(0, 5, 10)), subProgress);
+                    camera.fov = startFOV + subProgress * 10;
+                    camera.updateProjectionMatrix();
+                    
+                    nodes.forEach(n => {
+                        n.material.opacity = 1 - subProgress * 0.8;
+                    });
+                } else {
+                    const subProgress = (progress - 0.3) / 0.7;
+                    const subEase = 1 - Math.pow(1 - subProgress, 2);
+                    
+                    const midPos = cameraStartPos.clone().add(new THREE.Vector3(0, 5, 10));
+                    camera.position.lerpVectors(midPos, new THREE.Vector3(0, 10, 28), subEase);
+                    controls.target.lerpVectors(startTarget, new THREE.Vector3(0, 0, 0), subEase);
+                    
+                    camera.fov = startFOV + 10 - subEase * 10;
+                    camera.updateProjectionMatrix();
+                }
+                
+                controls.update();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animateSurface);
+                } else {
+                    camera.fov = startFOV;
+                    camera.updateProjectionMatrix();
+                    currentContextId = targetId;
+                    rebuildSceneAtContext(targetId);
+                    isDiving = false;
+                    tunnelOverlay.classList.remove('surfacing');
+                    updateDepthIndicator();
+                    bus.emit('node:surfaced', { id: targetId });
+                }
+            }
+            
+            animateSurface();
+        }
+        
+        function rebuildSceneAtContext(contextId) {
+            // Clear existing scene
+            nodes.forEach(mesh => {
+                scene.remove(mesh);
+                mesh.userData.labelDiv?.remove();
+                mesh.geometry.dispose();
+                mesh.material.dispose();
+            });
+            connections.forEach(conn => {
+                scene.remove(conn);
+                conn.geometry.dispose();
+                conn.material.dispose();
+            });
+            
+            // Remove any existing context shell
+            const existingShell = scene.getObjectByName('contextShell');
+            if (existingShell) {
+                scene.remove(existingShell);
+                existingShell.geometry.dispose();
+                existingShell.material.dispose();
+            }
+            
+            nodes.clear();
+            connections.length = 0;
+            selectedNode = null;
+            keyboardFocusNode = null;
+            store.expandedNodes.clear();
+            
+            // Get the context node data
+            const contextNode = store.findNode(contextId);
+            if (!contextNode) return;
+            
+            // If we're inside a node (not at root), create a subtle "context shell"
+            if (contextId !== store.data.id) {
+                const shellGeometry = new THREE.SphereGeometry(35, 64, 64);
+                const shellMaterial = new THREE.MeshBasicMaterial({
+                    color: new THREE.Color(contextNode.color),
+                    transparent: true,
+                    opacity: 0.025,
+                    side: THREE.BackSide,
+                    depthWrite: false
+                });
+                const shell = new THREE.Mesh(shellGeometry, shellMaterial);
+                shell.name = 'contextShell';
+                scene.add(shell);
+            }
+            
+            // Create a virtual root structure centered on the context node
+            const virtualRoot = JSON.parse(JSON.stringify(contextNode));
+            
+            // Calculate positions with context as root
+            const processedData = calculatePositions(virtualRoot);
+            createNodeMesh(processedData);
+            
+            // Animate nodes appearing
+            const allNodes = Array.from(nodes.values());
+            allNodes.forEach((mesh, i) => {
+                const targetScale = mesh.scale.x;
+                mesh.scale.set(0.01, 0.01, 0.01);
+                mesh.material.transparent = true;
+                mesh.material.opacity = 0;
+                
+                setTimeout(() => {
+                    const startTime = Date.now();
+                    const duration = 400;
+                    
+                    function animateAppear() {
+                        const progress = Math.min((Date.now() - startTime) / duration, 1);
+                        const ease = 1 - Math.pow(1 - progress, 3);
+                        
+                        mesh.scale.setScalar(0.01 + ease * (targetScale - 0.01));
+                        mesh.material.opacity = ease;
+                        
+                        if (progress < 1) {
+                            requestAnimationFrame(animateAppear);
+                        } else {
+                            mesh.material.transparent = false;
+                            mesh.material.opacity = 1;
+                        }
+                    }
+                    animateAppear();
+                }, i * 50);
+            });
+            
+            keyboardFocusNode = nodes.get(contextId);
+        }
         
         function createMatteMaterial(color) {
             return new THREE.MeshStandardMaterial({
@@ -2683,11 +3058,10 @@
             
             scene.add(mesh);
             
-            // Label with emoji
+            // Label
             const label = document.createElement('div');
             label.className = 'node-label';
-            const emojiSpan = data.emoji ? `<span class="node-label-emoji">${data.emoji}</span>` : '';
-            label.innerHTML = `${emojiSpan}${data.label}`;
+            label.textContent = data.label;
             label.style.display = data.level >= 2 ? 'none' : 'block';
             document.body.appendChild(label);
             mesh.userData.labelDiv = label;
@@ -3138,7 +3512,7 @@
         
         function onClick(e) {
             if (isDragging) return;
-            if (e.target.closest('#controls-panel, #info-panel, #search-container, #help-panel, #quick-capture, #minimap, #theme-toggle, .modal-overlay')) return;
+            if (e.target.closest('#controls-panel, #info-panel, #search-container, #help-panel, #quick-capture, #theme-toggle, #depth-indicator, .modal-overlay')) return;
             
             mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -3151,6 +3525,25 @@
                 selectNode(intersects[0].object);
             } else {
                 deselectNode();
+            }
+        }
+        
+        function onDoubleClick(e) {
+            if (e.target.closest('#controls-panel, #info-panel, #search-container, #help-panel, #quick-capture, #theme-toggle, #depth-indicator, .modal-overlay')) return;
+            
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const visibleNodes = Array.from(nodes.values()).filter(n => n.visible);
+            const intersects = raycaster.intersectObjects(visibleNodes);
+            
+            if (intersects.length > 0) {
+                const mesh = intersects[0].object;
+                // Only dive if node has children
+                if (mesh.userData.children && mesh.userData.children.length > 0) {
+                    diveIntoNode(mesh);
+                }
             }
         }
         
@@ -3195,16 +3588,21 @@
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mousemove', onMouseMoveForDrag);
         window.addEventListener('click', onClick);
+        window.addEventListener('dblclick', onDoubleClick);
         window.addEventListener('touchstart', onTouchStart, { passive: true });
         window.addEventListener('touchmove', onTouchMove, { passive: true });
         window.addEventListener('touchend', onTouchEnd);
         renderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault());
         
+        // Back button for surfacing
+        document.getElementById('depth-back-btn').addEventListener('click', () => {
+            surfaceFromNode();
+        });
+        
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-            minimap.resize();
         });
         
         function rebuildScene() {
@@ -3279,25 +3677,38 @@
         }
         
         // Event bus handlers
-        bus.on('camera:reset', deselectNode);
+        bus.on('camera:reset', () => {
+            if (currentContextId !== store.data.id) {
+                surfaceToNode(store.data.id);
+            } else {
+                deselectNode();
+            }
+        });
         bus.on('nodes:expandAll', expandAll);
         bus.on('nodes:collapseAll', collapseAll);
         bus.on('ui:deselect', deselectNode);
+        bus.on('ui:surface', () => {
+            // If we're deep in context, surface first
+            if (currentContextId !== store.data.id) {
+                surfaceFromNode();
+            } else {
+                // Otherwise just deselect
+                deselectNode();
+            }
+        });
         bus.on('node:focus', ({ id }) => focusNode(id));
-        bus.on('node:added', () => rebuildScene());
-        bus.on('node:deleted', () => rebuildScene());
-        bus.on('node:moved', () => rebuildScene());
-        bus.on('node:reordered', () => rebuildScene());
+        bus.on('node:added', () => rebuildSceneAtContext(currentContextId));
+        bus.on('node:deleted', () => rebuildSceneAtContext(currentContextId));
+        bus.on('node:moved', () => rebuildSceneAtContext(currentContextId));
+        bus.on('node:reordered', () => rebuildSceneAtContext(currentContextId));
         bus.on('node:updated', ({ node }) => {
             const mesh = nodes.get(node.id);
             if (mesh) {
                 mesh.userData.label = node.label;
-                mesh.userData.emoji = node.emoji;
                 mesh.userData.description = node.description;
                 mesh.userData.color = node.color;
                 
-                const emojiSpan = node.emoji ? `<span class="node-label-emoji">${node.emoji}</span>` : '';
-                mesh.userData.labelDiv.innerHTML = `${emojiSpan}${node.label}`;
+                mesh.userData.labelDiv.textContent = node.label;
                 mesh.material.color = new THREE.Color(node.color);
                 
                 if (selectedNode === mesh) {
@@ -3305,12 +3716,36 @@
                 }
             }
         });
-        bus.on('data:reset', () => rebuildScene());
-        bus.on('data:imported', () => rebuildScene());
+        bus.on('data:reset', () => {
+            currentContextId = store.data.id;
+            rebuildSceneAtContext(store.data.id);
+            updateDepthIndicator();
+        });
+        bus.on('data:imported', () => {
+            currentContextId = store.data.id;
+            rebuildSceneAtContext(store.data.id);
+            updateDepthIndicator();
+        });
         bus.on('keyboard:navigate', ({ direction }) => navigateKeyboard(direction));
         bus.on('keyboard:select', () => {
             if (keyboardFocusNode) selectNode(keyboardFocusNode);
         });
+        bus.on('node:tryDive', ({ id }) => {
+            const mesh = nodes.get(id);
+            if (mesh && mesh.userData.children && mesh.userData.children.length > 0) {
+                diveIntoNode(mesh);
+            }
+        });
+        
+        // Expose current context for UI
+        bus.on('context:get', (callback) => {
+            if (typeof callback === 'function') {
+                callback(currentContextId);
+            }
+        });
+        
+        // Provide method to get current context ID
+        window.getCurrentContext = () => currentContextId;
         
         // Build initial scene
         const processedData = calculatePositions(JSON.parse(JSON.stringify(store.data)));
@@ -3354,9 +3789,6 @@
                 }
             });
             
-            // Update minimap
-            minimap.render(Array.from(nodes.entries()), controls.target);
-            
             controls.update();
             renderer.render(scene, camera);
         }
@@ -3386,12 +3818,12 @@
             console.log(`
 ╭──────────────────────────────────────╮
 │                                      │
-│   M Y N D  v2.0                      │
+│   M Y N D  v2.1 — Tunnel Prototype   │
 │   Mind Architect                     │
 │                                      │
-│   New: Import, Dark Mode, Emojis,    │
-│   Quick Capture, Keyboard Nav,       │
-│   Drag Reorder, Minimap              │
+│   🆕 Double-click to DIVE into a     │
+│   node and explore its children      │
+│   Press Esc to SURFACE back up       │
 │                                      │
 ╰──────────────────────────────────────╯
             `);
