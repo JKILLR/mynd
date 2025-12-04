@@ -2545,23 +2545,31 @@
         scene.add(ambientLight);
         
         const mainLight = new THREE.DirectionalLight(0xFFFFFF, 0.8);
-        mainLight.position.set(10, 20, 10);
+        mainLight.position.set(15, 30, 15);
         mainLight.castShadow = true;
-        mainLight.shadow.mapSize.width = 2048;
-        mainLight.shadow.mapSize.height = 2048;
-        mainLight.shadow.radius = 4;
+        mainLight.shadow.mapSize.width = 4096;
+        mainLight.shadow.mapSize.height = 4096;
+        mainLight.shadow.camera.left = -60;
+        mainLight.shadow.camera.right = 60;
+        mainLight.shadow.camera.top = 60;
+        mainLight.shadow.camera.bottom = -60;
+        mainLight.shadow.camera.near = 1;
+        mainLight.shadow.camera.far = 100;
+        mainLight.shadow.radius = 8;
+        mainLight.shadow.bias = -0.0001;
+        mainLight.shadow.normalBias = 0.02;
         scene.add(mainLight);
         
         const fillLight = new THREE.DirectionalLight(0xD8D2C2, 0.4);
         fillLight.position.set(-10, 5, -10);
         scene.add(fillLight);
         
-        // Ground
-        const groundGeometry = new THREE.CircleGeometry(40, 64);
-        const groundMaterial = new THREE.ShadowMaterial({ opacity: 0.05 });
+        // Ground plane for shadows
+        const groundGeometry = new THREE.PlaneGeometry(200, 200);
+        const groundMaterial = new THREE.ShadowMaterial({ opacity: 0.08 });
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = -Math.PI / 2;
-        ground.position.y = -8;
+        ground.position.y = -6;
         ground.receiveShadow = true;
         scene.add(ground);
         
@@ -3056,6 +3064,23 @@
             mesh.userData = { ...data, parent };
             mesh.userData.isExpanded = false;
             
+            // Spring physics properties
+            mesh.userData.spring = {
+                // Position spring
+                velocity: new THREE.Vector3(0, 0, 0),
+                target: new THREE.Vector3(...data.position),
+                // Scale spring
+                scaleVelocity: 0,
+                scaleTarget: 1,
+                currentScale: 1,
+                // Rotation spring (for wobble)
+                rotVelocity: new THREE.Vector3(0, 0, 0),
+                rotTarget: new THREE.Vector3(0, 0, 0),
+                // Idle floating
+                floatOffset: Math.random() * Math.PI * 2,
+                floatSpeed: 0.3 + Math.random() * 0.2
+            };
+            
             scene.add(mesh);
             
             // Label
@@ -3084,6 +3109,65 @@
             }
             
             return mesh;
+        }
+        
+        // Spring physics constants
+        const SPRING = {
+            stiffness: 0.15,      // How snappy (0.1 = soft, 0.3 = snappy)
+            damping: 0.75,        // How quickly it settles (0.5 = bouncy, 0.9 = stiff)
+            scaleStiffness: 0.2,
+            scaleDamping: 0.7
+        };
+        
+        // Apply spring physics to a node
+        function updateSpring(mesh, deltaTime) {
+            const spring = mesh.userData.spring;
+            if (!spring) return;
+            
+            // Position spring
+            const displacement = new THREE.Vector3().subVectors(spring.target, mesh.position);
+            const springForce = displacement.multiplyScalar(SPRING.stiffness);
+            spring.velocity.add(springForce);
+            spring.velocity.multiplyScalar(SPRING.damping);
+            mesh.position.add(spring.velocity);
+            
+            // Scale spring
+            const scaleDiff = spring.scaleTarget - spring.currentScale;
+            spring.scaleVelocity += scaleDiff * SPRING.scaleStiffness;
+            spring.scaleVelocity *= SPRING.scaleDamping;
+            spring.currentScale += spring.scaleVelocity;
+            mesh.scale.setScalar(spring.currentScale);
+            
+            // Rotation spring (wobble) - spring back to zero rotation
+            const rotX = spring.rotTarget.x - mesh.rotation.x;
+            const rotZ = spring.rotTarget.z - mesh.rotation.z;
+            spring.rotVelocity.x += rotX * 0.1;
+            spring.rotVelocity.z += rotZ * 0.1;
+            spring.rotVelocity.multiplyScalar(0.85);
+            mesh.rotation.x += spring.rotVelocity.x;
+            mesh.rotation.z += spring.rotVelocity.z;
+        }
+        
+        // Trigger bounce effect on a node
+        function bounceNode(mesh, intensity = 0.15) {
+            if (!mesh.userData.spring) return;
+            mesh.userData.spring.scaleTarget = 1 + intensity;
+            setTimeout(() => {
+                if (mesh.userData.spring) mesh.userData.spring.scaleTarget = 1;
+            }, 100);
+        }
+        
+        // Trigger wobble effect
+        function wobbleNode(mesh, intensity = 0.1) {
+            if (!mesh.userData.spring) return;
+            mesh.userData.spring.rotVelocity.x = (Math.random() - 0.5) * intensity;
+            mesh.userData.spring.rotVelocity.z = (Math.random() - 0.5) * intensity;
+        }
+        
+        // Apply impulse to push node in a direction
+        function impulseNode(mesh, direction, force = 0.5) {
+            if (!mesh.userData.spring) return;
+            mesh.userData.spring.velocity.add(direction.multiplyScalar(force));
         }
         
         function createConnection(parentData, childData) {
@@ -3135,25 +3219,21 @@
             parentMesh.userData.isExpanded = !parentMesh.userData.isExpanded;
             const childMeshes = parentData.children.map(c => nodes.get(c.id)).filter(Boolean);
             
+            // Bounce the parent node
+            bounceNode(parentMesh, 0.12);
+            
             if (parentMesh.userData.isExpanded) {
                 audio.expand();
                 
+                // Move parent to expanded position using spring
                 if (parentData.level > 0 && parentData.expandedPosition) {
-                    const startPos = parentMesh.position.clone();
                     const targetPos = new THREE.Vector3(...parentData.expandedPosition);
-                    const startTime = Date.now();
-                    const grandparentMesh = parentData.parent ? nodes.get(parentData.parent.id) : null;
-                    
-                    function animateParent() {
-                        const progress = Math.min((Date.now() - startTime) / 300, 1);
-                        const ease = 1 - Math.pow(1 - progress, 3);
-                        parentMesh.position.lerpVectors(startPos, targetPos, ease);
-                        if (parentMesh.userData.connectionLine && grandparentMesh) {
-                            updateConnection(parentMesh, grandparentMesh);
-                        }
-                        if (progress < 1) requestAnimationFrame(animateParent);
+                    if (parentMesh.userData.spring) {
+                        parentMesh.userData.spring.target.copy(targetPos);
+                        // Give it a little outward impulse
+                        const outDir = targetPos.clone().sub(parentMesh.position).normalize();
+                        impulseNode(parentMesh, outDir, 0.3);
                     }
-                    animateParent();
                 }
                 
                 setTimeout(() => {
@@ -3176,6 +3256,7 @@
                             parentPos.z + Math.sin(childAngle) * childRadius
                         );
                         
+                        // Start at parent position
                         child.position.copy(parentPos);
                         child.scale.set(0.1, 0.1, 0.1);
                         child.material.transparent = true;
@@ -3183,17 +3264,30 @@
                         
                         if (child.userData.connectionLine) child.userData.connectionLine.visible = false;
                         
+                        // Initialize spring for this child
+                        if (child.userData.spring) {
+                            child.userData.spring.target.copy(targetPos);
+                            child.userData.spring.currentScale = 0.1;
+                            child.userData.spring.scaleTarget = 1;
+                            // Add outward impulse for springy pop
+                            const outDir = targetPos.clone().sub(parentPos).normalize();
+                            child.userData.spring.velocity.copy(outDir.multiplyScalar(0.8));
+                        }
+                        
                         setTimeout(() => {
                             const startTime = Date.now();
                             const startPos = parentPos.clone();
                             
                             function animate() {
                                 const progress = Math.min((Date.now() - startTime) / 400, 1);
-                                const ease = 1 - Math.pow(1 - progress, 3);
+                                // Springy ease with overshoot
+                                const ease = progress < 0.7 
+                                    ? 1.2 * (1 - Math.pow(1 - progress / 0.7, 3))
+                                    : 1 + 0.2 * Math.sin((progress - 0.7) / 0.3 * Math.PI);
                                 
-                                child.position.lerpVectors(startPos, targetPos, ease);
-                                child.scale.setScalar(0.1 + 0.9 * ease);
-                                child.material.opacity = progress;
+                                child.position.lerpVectors(startPos, targetPos, Math.min(ease, 1.1));
+                                child.scale.setScalar(0.1 + 0.9 * Math.min(ease, 1));
+                                child.material.opacity = Math.min(progress * 1.5, 1);
                                 
                                 if (child.userData.connectionLine && progress > 0.2) {
                                     child.userData.connectionLine.visible = true;
@@ -3204,11 +3298,20 @@
                                 if (progress < 1) {
                                     requestAnimationFrame(animate);
                                 } else {
+                                    // Set final spring target
+                                    if (child.userData.spring) {
+                                        child.userData.spring.target.copy(targetPos);
+                                        child.userData.spring.scaleTarget = 1;
+                                        child.userData.spring.currentScale = 1;
+                                    }
                                     child.scale.set(1, 1, 1);
                                     child.material.opacity = 1;
                                     child.material.transparent = false;
                                     child.userData.labelDiv.style.display = 'block';
                                     if (child.userData.connectionLine) child.userData.connectionLine.material.opacity = 0.5;
+                                    
+                                    // Little bounce at the end
+                                    bounceNode(child, 0.1);
                                 }
                             }
                             animate();
@@ -3252,24 +3355,15 @@
                     animate();
                 });
                 
+                // Parent moves back to base position with spring
                 if (parentData.level > 0 && parentData.basePosition) {
-                    const grandparentMesh = parentData.parent ? nodes.get(parentData.parent.id) : null;
-                    
-                    setTimeout(() => {
-                        const startPos = parentMesh.position.clone();
-                        const targetPos = new THREE.Vector3(...parentData.basePosition);
-                        const startTime = Date.now();
-                        
-                        function animateParent() {
-                            const progress = Math.min((Date.now() - startTime) / 300, 1);
-                            parentMesh.position.lerpVectors(startPos, targetPos, progress * progress);
-                            if (parentMesh.userData.connectionLine && grandparentMesh) {
-                                updateConnection(parentMesh, grandparentMesh);
-                            }
-                            if (progress < 1) requestAnimationFrame(animateParent);
-                        }
-                        animateParent();
-                    }, 280);
+                    const targetPos = new THREE.Vector3(...parentData.basePosition);
+                    if (parentMesh.userData.spring) {
+                        parentMesh.userData.spring.target.copy(targetPos);
+                        // Give it a little inward pull
+                        const inDir = targetPos.clone().sub(parentMesh.position).normalize();
+                        impulseNode(parentMesh, inDir, 0.2);
+                    }
                 }
                 
                 store.expandedNodes.delete(parentData.id);
@@ -3284,6 +3378,10 @@
                 if (!selectedIsChild && selectedNode.userData.isExpanded && selectedNode.userData.level > 0) {
                     toggleChildren(selectedNode);
                 }
+                // Reset previous selection's spring scale
+                if (selectedNode.userData.spring) {
+                    selectedNode.userData.spring.scaleTarget = 1;
+                }
             }
             
             if (mesh.userData.children && mesh.userData.children.length > 0 && mesh.userData.level > 0) {
@@ -3293,7 +3391,15 @@
             if (selectedNode) selectedNode.scale.set(1, 1, 1);
             
             selectedNode = mesh;
-            selectedNode.scale.set(1.1, 1.1, 1.1);
+            
+            // Spring bounce effect on selection
+            bounceNode(mesh, 0.2);
+            wobbleNode(mesh, 0.15);
+            
+            // Keep selected node slightly larger
+            if (mesh.userData.spring) {
+                mesh.userData.spring.scaleTarget = 1.1;
+            }
             
             // Update keyboard focus
             keyboardFocusNode = mesh;
@@ -3343,6 +3449,10 @@
         
         function deselectNode() {
             if (selectedNode) {
+                // Reset spring scale
+                if (selectedNode.userData.spring) {
+                    selectedNode.userData.spring.scaleTarget = 1;
+                }
                 selectedNode.scale.set(1, 1, 1);
                 if (selectedNode.userData.isExpanded && selectedNode.userData.level > 0) {
                     toggleChildren(selectedNode);
@@ -3352,10 +3462,14 @@
             
             keyboardFocusNode = nodes.get(store.data.id) || null;
             
+            // Reset all nodes' spring scales
             nodes.forEach(n => {
                 if (n.visible) {
                     n.material.opacity = 1;
                     n.material.transparent = false;
+                    if (n.userData.spring) {
+                        n.userData.spring.scaleTarget = 1;
+                    }
                 }
             });
             
@@ -3475,6 +3589,7 @@
         let hoveredNode = null;
         let isDragging = false;
         let mouseDownPos = { x: 0, y: 0 };
+        let lastHoveredNode = null;
         
         function onMouseMove(e) {
             mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -3484,18 +3599,30 @@
             const visibleNodes = Array.from(nodes.values()).filter(n => n.visible);
             const intersects = raycaster.intersectObjects(visibleNodes);
             
-            if (hoveredNode && hoveredNode !== selectedNode) {
-                hoveredNode.scale.set(1, 1, 1);
+            // Reset previous hover
+            if (lastHoveredNode && lastHoveredNode !== selectedNode && lastHoveredNode !== hoveredNode) {
+                if (lastHoveredNode.userData.spring) {
+                    lastHoveredNode.userData.spring.scaleTarget = 1;
+                }
             }
             
             if (intersects.length > 0) {
                 hoveredNode = intersects[0].object;
-                if (hoveredNode !== selectedNode) {
-                    hoveredNode.scale.set(1.06, 1.06, 1.06);
+                if (hoveredNode !== selectedNode && hoveredNode !== lastHoveredNode) {
+                    // Subtle bounce on first hover
+                    if (hoveredNode.userData.spring) {
+                        hoveredNode.userData.spring.scaleTarget = 1.08;
+                        wobbleNode(hoveredNode, 0.05);
+                    }
                 }
+                lastHoveredNode = hoveredNode;
                 renderer.domElement.style.cursor = 'pointer';
             } else {
+                if (hoveredNode && hoveredNode !== selectedNode && hoveredNode.userData.spring) {
+                    hoveredNode.userData.spring.scaleTarget = 1;
+                }
                 hoveredNode = null;
+                lastHoveredNode = null;
                 renderer.domElement.style.cursor = 'default';
             }
         }
@@ -3753,10 +3880,42 @@
         keyboardFocusNode = nodes.get(store.data.id);
         
         // Animation loop
+        const clock = new THREE.Clock();
+        
         function animate() {
             requestAnimationFrame(animate);
             
-            if (selectedNode) selectedNode.rotation.y += 0.003;
+            const time = clock.getElapsedTime();
+            const deltaTime = clock.getDelta();
+            
+            // Update spring physics for all nodes
+            nodes.forEach(mesh => {
+                if (mesh.visible) {
+                    updateSpring(mesh, deltaTime);
+                    
+                    // Subtle idle floating animation
+                    const spring = mesh.userData.spring;
+                    if (spring && mesh !== selectedNode) {
+                        const floatY = Math.sin(time * spring.floatSpeed + spring.floatOffset) * 0.08;
+                        const floatX = Math.cos(time * spring.floatSpeed * 0.7 + spring.floatOffset) * 0.03;
+                        mesh.position.y = spring.target.y + floatY;
+                        mesh.position.x = spring.target.x + floatX;
+                    }
+                    
+                    // Update connection lines as nodes move
+                    if (mesh.userData.connectionLine && mesh.userData.connectionLine.visible && mesh.userData.parent) {
+                        const parentMesh = nodes.get(mesh.userData.parent.id);
+                        if (parentMesh) {
+                            updateConnection(mesh, parentMesh);
+                        }
+                    }
+                }
+            });
+            
+            // Gentle rotation for selected node
+            if (selectedNode) {
+                selectedNode.rotation.y += 0.005;
+            }
             
             // Update labels with occlusion
             const visibleNodeMeshes = Array.from(nodes.values()).filter(n => n.visible);
