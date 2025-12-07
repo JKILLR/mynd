@@ -3231,6 +3231,7 @@
             selectedNode = null;
             keyboardFocusNode = null;
             // Preserve expandedNodes - don't clear them on rebuild
+            const expandedIds = new Set(store.expandedNodes);
             
             // Get the context node data
             const contextNode = store.findNode(contextId);
@@ -3257,6 +3258,61 @@
             // Calculate positions with context as root
             const processedData = calculatePositions(virtualRoot);
             createNodeMesh(processedData);
+            
+            // Restore expanded state for nodes
+            expandedIds.forEach(nodeId => {
+                const mesh = nodes.get(nodeId);
+                if (mesh && mesh.userData.children && mesh.userData.children.length > 0) {
+                    mesh.userData.isExpanded = true;
+                    store.expandedNodes.add(nodeId);
+                    
+                    // Move parent to expanded position
+                    if (mesh.userData.expandedPosition && mesh.userData.level > 0) {
+                        mesh.position.set(...mesh.userData.expandedPosition);
+                        mesh.userData.spring.target.set(...mesh.userData.expandedPosition);
+                        if (mesh.userData.connectionLine && mesh.userData.parent) {
+                            const parentMesh = nodes.get(mesh.userData.parent.id);
+                            if (parentMesh) updateConnection(mesh, parentMesh);
+                        }
+                    }
+                    
+                    // Show and position children
+                    mesh.userData.children.forEach((childData, i) => {
+                        const childMesh = nodes.get(childData.id);
+                        if (childMesh) {
+                            childMesh.visible = true;
+                            childMesh.userData.collapsed = false;
+                            if (childMesh.userData.labelDiv) {
+                                childMesh.userData.labelDiv.style.display = 'block';
+                            }
+                            
+                            // Position children around expanded parent
+                            if (mesh.userData.expandedPosition && mesh.userData.level > 0) {
+                                const parentPos = new THREE.Vector3(...mesh.userData.expandedPosition);
+                                const total = mesh.userData.children.length;
+                                const angleSpread = Math.PI * 0.55;
+                                const startAngle = -angleSpread / 2;
+                                const angleStep = total > 1 ? angleSpread / (total - 1) : 0;
+                                const angle = startAngle + i * angleStep;
+                                
+                                const childRadius = 3.5 + (childMesh.userData.level - 2) * 0.4;
+                                const childX = parentPos.x + Math.sin(angle) * childRadius;
+                                const childZ = parentPos.z + Math.cos(angle) * childRadius;
+                                const childY = parentPos.y - 0.3;
+                                
+                                childMesh.position.set(childX, childY, childZ);
+                                childMesh.userData.spring.target.set(childX, childY, childZ);
+                            }
+                            
+                            // Update connection
+                            if (childMesh.userData.connectionLine) {
+                                childMesh.userData.connectionLine.visible = true;
+                                updateConnection(childMesh, mesh);
+                            }
+                        }
+                    });
+                }
+            });
             
             // Animate only visible nodes appearing (unless skipped)
             if (!skipAnimation) {
@@ -3998,8 +4054,16 @@
                 return;
             }
             
-            // Check if hovering over radial menu
+            // Check if hovering over radial menu - if so, skip all node detection
             const isOverRadialMenu = e.target.closest('#radial-menu');
+            if (isOverRadialMenu) {
+                // Clear any hide timeout when over the menu
+                if (radialMenuHideTimeout) {
+                    clearTimeout(radialMenuHideTimeout);
+                    radialMenuHideTimeout = null;
+                }
+                return; // Don't process node hover when over the menu
+            }
             
             mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -4035,8 +4099,8 @@
                     clearTimeout(radialMenuHideTimeout);
                     radialMenuHideTimeout = null;
                 }
-            } else if (!isOverRadialMenu) {
-                // Only process if not hovering over radial menu
+            } else {
+                // Not over any node and not over radial menu
                 if (hoveredNode && hoveredNode !== selectedNode && hoveredNode.userData.spring) {
                     hoveredNode.userData.spring.scaleTarget = 1;
                 }
@@ -4426,39 +4490,7 @@
             }
         }
         
-        function handleRadialAction(action) {
-            if (!radialMenuNode) return;
-            
-            // Save reference before menu is hidden
-            const targetNode = radialMenuNode;
-            
-            switch (action) {
-                case 'add':
-                    selectNode(targetNode);
-                    setTimeout(() => bus.emit('action:new'), 100);
-                    break;
-                case 'dive':
-                    if (targetNode.userData.children?.length > 0) {
-                        diveIntoNode(targetNode);
-                    }
-                    break;
-                case 'edit':
-                    selectNode(targetNode);
-                    setTimeout(() => {
-                        const nameInput = document.getElementById('node-name');
-                        if (nameInput) {
-                            nameInput.focus();
-                            nameInput.select();
-                        }
-                    }, 100);
-                    break;
-                case 'move':
-                    startNodeDrag(targetNode);
-                    break;
-                // delete is now handled directly in click handler
-            }
-            hideRadialMenu();
-        }
+        // All radial menu actions are now handled directly in the click handler above
         
         function startNodeDrag(mesh) {
             if (mesh.userData.level === 0) {
@@ -4599,29 +4631,63 @@
             item.addEventListener('click', (e) => {
                 e.stopPropagation();
                 e.preventDefault();
+                
+                if (!radialMenuNode) return;
+                
+                // Capture node reference immediately for ALL actions
+                const targetNode = radialMenuNode;
                 const action = item.dataset.action;
-                if (action === 'delete' && radialMenuNode) {
-                    // Handle delete directly here to avoid any timing issues
-                    const targetNode = radialMenuNode;
-                    const nodeId = targetNode.userData.id;
-                    const nodeLabel = targetNode.userData.label;
-                    const nodeLevel = targetNode.userData.level;
-                    
-                    if (nodeLevel === 0 || nodeId === store.data.id) {
-                        app.showToast('Cannot delete root node', 'error');
-                        return;
-                    }
-                    
-                    hideRadialMenu();
-                    
-                    if (confirm(`Delete "${nodeLabel}" and all its children?`)) {
-                        if (store.deleteNode(nodeId)) {
-                            app.showToast(`Deleted "${nodeLabel}"`, 'success');
-                            bus.emit('ui:deselect');
+                
+                switch (action) {
+                    case 'add':
+                        selectNode(targetNode);
+                        hideRadialMenu();
+                        setTimeout(() => bus.emit('action:new'), 100);
+                        break;
+                        
+                    case 'dive':
+                        if (targetNode.userData.children?.length > 0) {
+                            hideRadialMenu();
+                            diveIntoNode(targetNode);
                         }
-                    }
-                } else {
-                    handleRadialAction(action);
+                        break;
+                        
+                    case 'edit':
+                        selectNode(targetNode);
+                        hideRadialMenu();
+                        setTimeout(() => {
+                            const nameInput = document.getElementById('node-name');
+                            if (nameInput) {
+                                nameInput.focus();
+                                nameInput.select();
+                            }
+                        }, 100);
+                        break;
+                        
+                    case 'move':
+                        hideRadialMenu();
+                        startNodeDrag(targetNode);
+                        break;
+                        
+                    case 'delete':
+                        const nodeId = targetNode.userData.id;
+                        const nodeLabel = targetNode.userData.label;
+                        const nodeLevel = targetNode.userData.level;
+                        
+                        if (nodeLevel === 0 || nodeId === store.data.id) {
+                            app.showToast('Cannot delete root node', 'error');
+                            return;
+                        }
+                        
+                        hideRadialMenu();
+                        
+                        if (confirm(`Delete "${nodeLabel}" and all its children?`)) {
+                            if (store.deleteNode(nodeId)) {
+                                app.showToast(`Deleted "${nodeLabel}"`, 'success');
+                                bus.emit('ui:deselect');
+                            }
+                        }
+                        break;
                 }
             });
         });
