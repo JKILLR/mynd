@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MYND — Mind Architect</title>
     
+    <!-- 
+        MYND v2.0 — Mind Architect
+        A 3D mind mapping application with Z-axis tunneling navigation
+        
+        Features:
+        - 3D node visualization with organic spring physics
+        - Z-axis tunneling: dive into nodes to explore children
+        - Radial context menu for quick actions
+        - Drag-to-move nodes in 3D space
+        - Undo system (Ctrl/Cmd+Z)
+        - Import/Export JSON
+        - Dark mode support
+        - Keyboard navigation
+    -->
+    
     <!-- PWA & Meta -->
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
@@ -2119,6 +2134,7 @@
     }
     
     const store = new Store();
+    let app = null; // Will be assigned in main()
 
     // ═══════════════════════════════════════════════════════════════════════════
     // MODULE: ThemeManager
@@ -2274,14 +2290,6 @@
                     reader.readAsText(file);
                 }
                 e.target.value = '';
-            });
-            
-            document.getElementById('add-node-btn').addEventListener('click', () => {
-                if (store.selectedNodeId) this.openModal('add', store.selectedNodeId);
-            });
-            
-            document.getElementById('edit-node-btn').addEventListener('click', () => {
-                if (store.selectedNodeId) this.openModal('edit', store.selectedNodeId);
             });
             
             document.getElementById('modal-cancel').addEventListener('click', () => this.closeModal());
@@ -3697,7 +3705,7 @@
             }
         }
         
-        function selectNode(mesh) {
+        function selectNode(mesh, skipToggle = false) {
             audio.select();
             
             // Track previous node for camera transition
@@ -3714,7 +3722,8 @@
                 }
             }
             
-            if (mesh.userData.children && mesh.userData.children.length > 0 && mesh.userData.level > 0) {
+            // Only toggle children if not skipping and node has children
+            if (!skipToggle && mesh.userData.children && mesh.userData.children.length > 0 && mesh.userData.level > 0) {
                 toggleChildren(mesh);
             }
             
@@ -3772,10 +3781,20 @@
                 nodePos.z + (mindToNode.length() > 0.1 ? mindToNode.z : 1) * distance
             );
             
-            // Use zoom transition when switching between nodes, regular transition otherwise
+            // Use zoom transition only when switching between unrelated nodes (not parent/child)
             const wasSwitchingNodes = previousSelectedNode && previousSelectedNode !== mesh;
             if (wasSwitchingNodes) {
-                animateCameraWithZoom(camera.position.clone(), newCameraPos, controls.target.clone(), nodePos);
+                // Check if switching between parent and child
+                const isChildOfPrevious = mesh.userData.parent && mesh.userData.parent.id === previousSelectedNode.userData.id;
+                const isParentOfPrevious = previousSelectedNode.userData.parent && previousSelectedNode.userData.parent.id === mesh.userData.id;
+                
+                if (isChildOfPrevious || isParentOfPrevious) {
+                    // Direct parent/child relationship - use smooth transition without zoom
+                    animateCamera(camera.position.clone(), newCameraPos, controls.target.clone(), nodePos);
+                } else {
+                    // Unrelated nodes (siblings, different branches) - use zoom transition
+                    animateCameraWithZoom(camera.position.clone(), newCameraPos, controls.target.clone(), nodePos);
+                }
             } else {
                 animateCamera(camera.position.clone(), newCameraPos, controls.target.clone(), nodePos);
             }
@@ -4157,7 +4176,6 @@
         let isNodeDragMode = false;
         let nodeDragTarget = null;
         let nodeDragPlane = null;
-        let nodeDragOffset = new THREE.Vector3();
         
         let radialMenuHideTimeout = null;
         let radialAnimating = false; // Track if expand/collapse animation is in progress
@@ -4415,8 +4433,6 @@
             }
         }
         
-        // All radial menu actions are now handled directly in the click handler above
-        
         function startNodeDrag(mesh) {
             if (mesh.userData.level === 0) {
                 app.showToast('Cannot move the root node', 'error');
@@ -4432,8 +4448,11 @@
             mesh.material.opacity = 0.7;
             mesh.material.transparent = true;
             
-            // Create invisible drag plane at node height
-            nodeDragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -mesh.position.y);
+            // Create drag plane facing the camera, positioned at the node
+            const cameraDirection = new THREE.Vector3();
+            camera.getWorldDirection(cameraDirection);
+            nodeDragPlane = new THREE.Plane();
+            nodeDragPlane.setFromNormalAndCoplanarPoint(cameraDirection, mesh.position);
             
             app.showToast('Drag to move • Click to place', 'success');
         }
@@ -4448,8 +4467,7 @@
             
             const intersection = new THREE.Vector3();
             if (raycaster.ray.intersectPlane(nodeDragPlane, intersection)) {
-                nodeDragTarget.position.x = intersection.x;
-                nodeDragTarget.position.z = intersection.z;
+                nodeDragTarget.position.copy(intersection);
                 
                 // Update spring target
                 if (nodeDragTarget.userData.spring) {
@@ -4559,56 +4577,48 @@
                 
                 if (!radialMenuNode) return;
                 
-                // Capture node reference immediately for ALL actions
+                // Capture ALL node data immediately before hiding menu
                 const targetNode = radialMenuNode;
+                const targetNodeId = targetNode.userData.id;
+                const targetNodeLabel = targetNode.userData.label;
+                const targetNodeLevel = targetNode.userData.level;
+                const targetNodeChildren = targetNode.userData.children;
                 const action = item.dataset.action;
                 
+                // Hide menu first (this clears radialMenuNode)
+                hideRadialMenu();
+                
+                // Now use captured data
                 switch (action) {
                     case 'add':
-                        selectNode(targetNode);
-                        hideRadialMenu();
-                        setTimeout(() => bus.emit('action:new'), 100);
+                        store.selectedNodeId = targetNodeId;
+                        app.openModal('add', targetNodeId);
                         break;
                         
                     case 'dive':
-                        if (targetNode.userData.children?.length > 0) {
-                            hideRadialMenu();
+                        if (targetNodeChildren?.length > 0) {
                             diveIntoNode(targetNode);
                         }
                         break;
                         
                     case 'edit':
-                        selectNode(targetNode);
-                        hideRadialMenu();
-                        setTimeout(() => {
-                            const nameInput = document.getElementById('node-name');
-                            if (nameInput) {
-                                nameInput.focus();
-                                nameInput.select();
-                            }
-                        }, 100);
+                        store.selectedNodeId = targetNodeId;
+                        app.openModal('edit', targetNodeId);
                         break;
                         
                     case 'move':
-                        hideRadialMenu();
                         startNodeDrag(targetNode);
                         break;
                         
                     case 'delete':
-                        const nodeId = targetNode.userData.id;
-                        const nodeLabel = targetNode.userData.label;
-                        const nodeLevel = targetNode.userData.level;
-                        
-                        if (nodeLevel === 0 || nodeId === store.data.id) {
+                        if (targetNodeLevel === 0 || targetNodeId === store.data.id) {
                             app.showToast('Cannot delete root node', 'error');
                             return;
                         }
                         
-                        hideRadialMenu();
-                        
-                        if (confirm(`Delete "${nodeLabel}" and all its children?`)) {
-                            if (store.deleteNode(nodeId)) {
-                                app.showToast(`Deleted "${nodeLabel}"`, 'success');
+                        if (confirm(`Delete "${targetNodeLabel}" and all its children?`)) {
+                            if (store.deleteNode(targetNodeId)) {
+                                app.showToast(`Deleted "${targetNodeLabel}"`, 'success');
                                 bus.emit('ui:deselect');
                             }
                         }
@@ -5067,6 +5077,7 @@
     
     (async function main() {
         const ui = new UIController();
+        app = ui; // Make app available at module level for 3D scene code
         
         document.addEventListener('click', () => audio.init(), { once: true });
         document.addEventListener('touchstart', () => audio.init(), { once: true });
@@ -5077,19 +5088,6 @@
         try {
             await initOrganicScene();
             ui.hideLoading();
-            
-            console.log(`
-╭──────────────────────────────────────╮
-│                                      │
-│   M Y N D  v2.1 — Tunnel Prototype   │
-│   Mind Architect                     │
-│                                      │
-│   🆕 Double-click to DIVE into a     │
-│   node and explore its children      │
-│   Press Esc to SURFACE back up       │
-│                                      │
-╰──────────────────────────────────────╯
-            `);
             
         } catch (error) {
             console.error('Initialization failed:', error);
