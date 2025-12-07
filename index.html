@@ -26,16 +26,16 @@
         /* ─── Design Tokens ─── */
         :root {
             /* Natural Palette - Light */
-            --milk: #F9F7F0;
-            --milk-warm: #F5F2E8;
-            --light-stone: #D8D2C2;
-            --stone: #C4BBA8;
-            --desert-clay: #B17457;
-            --clay-light: #C8917A;
-            --clay-dark: #9A6149;
-            --graphite: #4A4947;
-            --graphite-light: #6B6967;
-            --charcoal: #2D2C2B;
+            --milk: #FDFCF9;
+            --milk-warm: #F8F5EE;
+            --light-stone: #E5DFD2;
+            --stone: #D0C9BA;
+            --desert-clay: #C9917A;
+            --clay-light: #D8A692;
+            --clay-dark: #A87560;
+            --graphite: #5A5856;
+            --graphite-light: #7A7876;
+            --charcoal: #3D3C3A;
             
             /* Semantic Colors */
             --bg-primary: var(--milk);
@@ -47,15 +47,15 @@
             --accent: var(--desert-clay);
             --accent-hover: var(--clay-dark);
             
-            /* Node Colors - Light earthy spectrum */
-            --node-terracotta: #D4A088;
-            --node-sage: #A8B89E;
-            --node-sand: #E5DCC8;
-            --node-slate: #9EACAD;
-            --node-rust: #C89080;
-            --node-moss: #8FA888;
-            --node-clay: #D9C4A8;
-            --node-storm: #889898;
+            /* Node Colors - Lighter naturals */
+            --node-terracotta: #DCB8A8;
+            --node-sage: #B8C8B0;
+            --node-sand: #EDE5D8;
+            --node-slate: #B0BCBD;
+            --node-rust: #D8A898;
+            --node-moss: #A8C0A8;
+            --node-clay: #E5D8C0;
+            --node-storm: #A0B0B0;
             
             /* Surfaces */
             --surface-glass: rgba(249, 247, 240, 0.85);
@@ -82,9 +82,9 @@
             /* Transitions */
             --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
             --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-            --duration-fast: 150ms;
-            --duration-normal: 250ms;
-            --duration-slow: 400ms;
+            --duration-fast: 225ms;
+            --duration-normal: 375ms;
+            --duration-slow: 600ms;
             
             /* Shadows */
             --shadow-sm: 0 1px 2px rgba(45, 44, 43, 0.04), 0 1px 3px rgba(45, 44, 43, 0.06);
@@ -947,6 +947,157 @@
             to { opacity: 0; transform: translateY(-20px); }
         }
         
+        /* ─── Radial Node Menu ─── */
+        #radial-menu {
+            position: fixed;
+            z-index: 200;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity var(--duration-fast);
+        }
+        
+        #radial-menu.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .radial-toggle {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--surface-glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-medium);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: bold;
+            transition: all var(--duration-fast);
+            transform: translate(-50%, -50%);
+            z-index: 100;
+        }
+        
+        .radial-items {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        .radial-hit-area {
+            position: absolute;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .radial-hit-area.active {
+            pointer-events: auto;
+        }
+        
+        .radial-node-hit-area {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            box-sizing: border-box;
+            border-style: solid;
+            border-color: rgba(128, 128, 128, 0.01);
+            z-index: 1;
+        }
+        
+        .radial-node-hit-area.active {
+            pointer-events: auto;
+        }
+        
+        .radial-item {
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--surface-glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-medium);
+            box-shadow: var(--shadow-md);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.5);
+            pointer-events: none;
+        }
+        
+        .radial-item.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+            transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+        }
+        
+        .radial-item:hover {
+            background: var(--desert-clay);
+            color: white;
+            border-color: var(--desert-clay);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .radial-item[data-action="delete"] span:first-child {
+            font-size: 11px;
+        }
+        
+        .radial-item[data-action="delete"]:hover {
+            background: #c45;
+            border-color: #c45;
+        }
+        
+        .radial-toggle:hover,
+        .radial-toggle.active {
+            background: var(--surface-card);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .radial-item .tooltip {
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--charcoal);
+            color: white;
+            font-size: 9px;
+            padding: 3px 6px;
+            border-radius: 3px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--duration-fast);
+        }
+        
+        .radial-item:hover .tooltip {
+            opacity: 1;
+        }
+        
+        /* Drag mode indicator */
+        .drag-mode-active {
+            cursor: grab !important;
+        }
+        
+        .drag-mode-active:active {
+            cursor: grabbing !important;
+        }
+        
+        .node-dragging {
+            opacity: 0.8;
+        }
+        
         /* ─── Node Labels (3D) ─── */
         .node-label {
             position: absolute;
@@ -983,11 +1134,11 @@
         }
         
         #tunnel-overlay.diving {
-            animation: tunnelDive 1s ease-in-out forwards;
+            animation: tunnelDive 1.5s ease-in-out forwards;
         }
         
         #tunnel-overlay.surfacing {
-            animation: tunnelSurface 0.7s ease-out forwards;
+            animation: tunnelSurface 1.05s ease-out forwards;
         }
         
         @keyframes tunnelDive {
@@ -1046,7 +1197,7 @@
         }
         
         #tunnel-overlay.diving::before {
-            animation: speedLines 1s ease-in-out forwards;
+            animation: speedLines 1.5s ease-in-out forwards;
         }
         
         @keyframes speedLines {
@@ -1448,6 +1599,7 @@
         <div class="help-item"><span class="help-key">Right</span> Pan view</div>
         <div class="help-item"><span class="help-key">Scroll</span> Zoom</div>
         <div class="help-item"><span class="help-key">⌘K</span> Search</div>
+        <div class="help-item"><span class="help-key">⌘Z</span> Undo</div>
         <div class="help-item"><span class="help-key">Q</span> Quick capture</div>
         <div class="help-item"><span class="help-key">N</span> New node</div>
         <div class="help-item"><span class="help-key">↑↓←→</span> Navigate</div>
@@ -1462,6 +1614,35 @@
             <button class="quick-capture-btn" id="quick-capture-submit">Add</button>
         </div>
         <div class="quick-capture-hint">Press Esc to close • Adding to selected node or root</div>
+    </div>
+    
+    <!-- Radial Node Menu -->
+    <div id="radial-menu">
+        <div class="radial-hit-area" id="radial-hit-area"></div>
+        <div class="radial-node-hit-area" id="radial-node-hit-area"></div>
+        <button class="radial-toggle" id="radial-toggle" aria-label="Node menu">⋯</button>
+        <div class="radial-items">
+            <button class="radial-item" data-action="add" aria-label="Add child node">
+                <span>+</span>
+                <span class="tooltip">Add Child</span>
+            </button>
+            <button class="radial-item" data-action="dive" aria-label="Dive into node">
+                <span>↓</span>
+                <span class="tooltip">Dive In</span>
+            </button>
+            <button class="radial-item" data-action="edit" aria-label="Edit node">
+                <span>✎</span>
+                <span class="tooltip">Edit</span>
+            </button>
+            <button class="radial-item" data-action="move" aria-label="Move node">
+                <span>✥</span>
+                <span class="tooltip">Move</span>
+            </button>
+            <button class="radial-item" data-action="delete" aria-label="Delete node">
+                <span>🗑</span>
+                <span class="tooltip">Delete</span>
+            </button>
+        </div>
     </div>
     
     <!-- Info Panel -->
@@ -1575,56 +1756,56 @@
     // MODULE: Store
     // ═══════════════════════════════════════════════════════════════════════════
     
-    const STORAGE_KEY = 'mynd-mind-map-v5';
+    const STORAGE_KEY = 'mynd-mind-map-v12';
     
     const defaultData = {
         id: 'mynd',
         label: 'MYND',
-        color: '#4A4947',
+        color: '#5A5856',
         description: 'Your mind map. Click to explore, add thoughts, and build connections.',
         children: [
             {
                 id: 'ideas',
                 label: 'Ideas',
-                color: '#D4A088',
+                color: '#DCB8A8',
                 description: 'Creative sparks and inspirations',
                 children: [
-                    { id: 'idea-1', label: 'Dreams', color: '#C89080', description: 'Aspirations to explore' },
-                    { id: 'idea-2', label: 'Concepts', color: '#C89080', description: 'Abstract thoughts' },
-                    { id: 'idea-3', label: 'Visions', color: '#C89080', description: 'Future possibilities' }
+                    { id: 'idea-1', label: 'Dreams', color: '#D8A898', description: 'Aspirations to explore' },
+                    { id: 'idea-2', label: 'Concepts', color: '#D8A898', description: 'Abstract thoughts' },
+                    { id: 'idea-3', label: 'Visions', color: '#D8A898', description: 'Future possibilities' }
                 ]
             },
             {
                 id: 'projects',
                 label: 'Projects',
-                color: '#A8B89E',
+                color: '#B8C8B0',
                 description: 'Active work and initiatives',
                 children: [
-                    { id: 'proj-1', label: 'Current', color: '#8FA888', description: 'In progress now' },
-                    { id: 'proj-2', label: 'Planned', color: '#8FA888', description: 'Coming soon' },
-                    { id: 'proj-3', label: 'Archive', color: '#8FA888', description: 'Completed work' }
+                    { id: 'proj-1', label: 'Current', color: '#A8C0A8', description: 'In progress now' },
+                    { id: 'proj-2', label: 'Planned', color: '#A8C0A8', description: 'Coming soon' },
+                    { id: 'proj-3', label: 'Archive', color: '#A8C0A8', description: 'Completed work' }
                 ]
             },
             {
                 id: 'knowledge',
                 label: 'Knowledge',
-                color: '#9EACAD',
+                color: '#B0BCBD',
                 description: 'Learnings and insights',
                 children: [
-                    { id: 'know-1', label: 'Skills', color: '#889898', description: 'Abilities to develop' },
-                    { id: 'know-2', label: 'Notes', color: '#889898', description: 'Quick captures' },
-                    { id: 'know-3', label: 'Links', color: '#889898', description: 'Resources to remember' }
+                    { id: 'know-1', label: 'Skills', color: '#A0B0B0', description: 'Abilities to develop' },
+                    { id: 'know-2', label: 'Notes', color: '#A0B0B0', description: 'Quick captures' },
+                    { id: 'know-3', label: 'Links', color: '#A0B0B0', description: 'Resources to remember' }
                 ]
             },
             {
                 id: 'life',
                 label: 'Life',
-                color: '#E5DCC8',
+                color: '#EDE5D8',
                 description: 'Personal domains',
                 children: [
-                    { id: 'life-1', label: 'Health', color: '#D9C4A8', description: 'Wellbeing focus' },
-                    { id: 'life-2', label: 'Goals', color: '#D9C4A8', description: 'Targets to reach' },
-                    { id: 'life-3', label: 'Memories', color: '#D9C4A8', description: 'Moments to cherish' }
+                    { id: 'life-1', label: 'Health', color: '#E5D8C0', description: 'Wellbeing focus' },
+                    { id: 'life-2', label: 'Goals', color: '#E5D8C0', description: 'Targets to reach' },
+                    { id: 'life-3', label: 'Memories', color: '#E5D8C0', description: 'Moments to cherish' }
                 ]
             }
         ]
@@ -1636,6 +1817,51 @@
             this.selectedNodeId = null;
             this.expandedNodes = new Set();
             this.keyboardFocusId = null;
+            
+            // Undo system
+            this.undoStack = [];
+            this.maxUndoSteps = 50;
+        }
+        
+        // Save a snapshot before making changes
+        saveSnapshot(actionName = 'change') {
+            const snapshot = {
+                data: JSON.parse(JSON.stringify(this.data)),
+                expandedNodes: new Set(this.expandedNodes),
+                actionName,
+                timestamp: Date.now()
+            };
+            
+            this.undoStack.push(snapshot);
+            
+            // Limit stack size
+            if (this.undoStack.length > this.maxUndoSteps) {
+                this.undoStack.shift();
+            }
+        }
+        
+        // Undo last action
+        undo() {
+            if (this.undoStack.length === 0) {
+                return { success: false, message: 'Nothing to undo' };
+            }
+            
+            const snapshot = this.undoStack.pop();
+            this.data = snapshot.data;
+            this.expandedNodes = snapshot.expandedNodes;
+            this.save();
+            
+            bus.emit('data:undone', { actionName: snapshot.actionName });
+            return { success: true, actionName: snapshot.actionName };
+        }
+        
+        canUndo() {
+            return this.undoStack.length > 0;
+        }
+        
+        getUndoActionName() {
+            if (this.undoStack.length === 0) return null;
+            return this.undoStack[this.undoStack.length - 1].actionName;
         }
         
         load() {
@@ -1691,6 +1917,9 @@
             const parent = this.findNode(parentId);
             if (!parent) return null;
             
+            // Save snapshot before change
+            this.saveSnapshot('Add node');
+            
             if (!parent.children) parent.children = [];
             const newNode = {
                 id: nodeData.id || `node-${Date.now()}`,
@@ -1711,6 +1940,9 @@
             const node = this.findNode(id);
             if (!node) return null;
             
+            // Save snapshot before change
+            this.saveSnapshot('Edit node');
+            
             Object.assign(node, updates);
             this.save();
             bus.emit('node:updated', { node });
@@ -1725,6 +1957,9 @@
             
             const index = parent.children.findIndex(c => c.id === id);
             if (index === -1) return false;
+            
+            // Save snapshot before change
+            this.saveSnapshot('Delete node');
             
             const deleted = parent.children.splice(index, 1)[0];
             this.save();
@@ -1748,6 +1983,9 @@
                 if (checkNode.id === nodeId) return false;
                 checkNode = this.findParent(checkNode.id);
             }
+            
+            // Save snapshot before change
+            this.saveSnapshot('Move node');
             
             // Remove from old parent
             const oldIndex = oldParent.children.findIndex(c => c.id === nodeId);
@@ -1775,6 +2013,9 @@
             const newIndex = direction === 'up' ? index - 1 : index + 1;
             
             if (newIndex < 0 || newIndex >= parent.children.length) return false;
+            
+            // Save snapshot before change
+            this.saveSnapshot('Reorder node');
             
             // Swap
             [parent.children[index], parent.children[newIndex]] = 
@@ -2106,6 +2347,12 @@
                     bus.emit('ui:surface');
                     this.closeModal();
                     this.toggleQuickCapture(false);
+                    break;
+                case 'z':
+                    if (e.metaKey || e.ctrlKey) {
+                        e.preventDefault();
+                        this.performUndo();
+                    }
                     break;
                 case 'k':
                     if (e.metaKey || e.ctrlKey) {
@@ -2476,6 +2723,20 @@
             }, 3000);
         }
         
+        // Alias for external use
+        showToast(message, type = 'success') {
+            this.toast(message, type);
+        }
+        
+        performUndo() {
+            const result = store.undo();
+            if (result.success) {
+                this.toast(`Undid: ${result.actionName}`, 'success');
+            } else {
+                this.toast('Nothing to undo', 'error');
+            }
+        }
+        
         escapeHTML(str) {
             const div = document.createElement('div');
             div.textContent = str;
@@ -2532,7 +2793,47 @@
                 shiftHeld = true;
                 controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
             }
+            
+            // Cancel node drag mode or close radial menu on Escape
+            if (e.key === 'Escape') {
+                if (isNodeDragMode) {
+                    cancelNodeDrag();
+                }
+                if (radialMenuOpen) {
+                    hideRadialMenu();
+                }
+            }
         });
+        
+        function cancelNodeDrag() {
+            if (!isNodeDragMode || !nodeDragTarget) return;
+            
+            isNodeDragMode = false;
+            renderer.domElement.classList.remove('drag-mode-active');
+            
+            // Restore material
+            nodeDragTarget.material.opacity = 1;
+            nodeDragTarget.material.transparent = false;
+            
+            // Restore original position from userData
+            if (nodeDragTarget.userData.basePosition) {
+                nodeDragTarget.position.set(...nodeDragTarget.userData.basePosition);
+                if (nodeDragTarget.userData.spring) {
+                    nodeDragTarget.userData.spring.target.copy(nodeDragTarget.position);
+                }
+                // Update connections
+                updateConnection(nodeDragTarget, nodes.get(nodeDragTarget.userData.parent?.id));
+            }
+            
+            // Remove the snapshot we added since action was cancelled
+            if (store.undoStack.length > 0) {
+                store.undoStack.pop();
+            }
+            
+            app.showToast('Move cancelled', 'error');
+            nodeDragTarget = null;
+            nodeDragPlane = null;
+        }
         window.addEventListener('keyup', (e) => {
             if (e.key === 'Shift') {
                 shiftHeld = false;
@@ -2642,7 +2943,7 @@
             const dirToNode = nodePos.clone().sub(cameraStartPos).normalize();
             
             const startTime = Date.now();
-            const duration = 1000; // Slightly longer for smoother feel
+            const duration = 1500; // Slowed down for smoother feel
             
             // Scale up target node during approach
             const originalScale = mesh.scale.clone();
@@ -2746,7 +3047,7 @@
             connections.forEach((c, i) => {
                 setTimeout(() => {
                     c.material.opacity = 0.02;
-                }, i * 15);
+                }, i * 22);
             });
             
             animateDive();
@@ -2772,7 +3073,7 @@
             const startFOV = camera.fov;
             
             const startTime = Date.now();
-            const duration = 700;
+            const duration = 1050;
             
             // Fade out current nodes first
             nodes.forEach(n => {
@@ -2848,7 +3149,7 @@
             tunnelOverlay.classList.add('surfacing');
             
             const startTime = Date.now();
-            const duration = 700;
+            const duration = 1050;
             const cameraStartPos = camera.position.clone();
             const startTarget = controls.target.clone();
             const startFOV = camera.fov;
@@ -2903,7 +3204,7 @@
             animateSurface();
         }
         
-        function rebuildSceneAtContext(contextId) {
+        function rebuildSceneAtContext(contextId, skipAnimation = false) {
             // Clear existing scene
             nodes.forEach(mesh => {
                 scene.remove(mesh);
@@ -2929,7 +3230,7 @@
             connections.length = 0;
             selectedNode = null;
             keyboardFocusNode = null;
-            store.expandedNodes.clear();
+            // Preserve expandedNodes - don't clear them on rebuild
             
             // Get the context node data
             const contextNode = store.findNode(contextId);
@@ -2957,35 +3258,37 @@
             const processedData = calculatePositions(virtualRoot);
             createNodeMesh(processedData);
             
-            // Animate nodes appearing
-            const allNodes = Array.from(nodes.values());
-            allNodes.forEach((mesh, i) => {
-                const targetScale = mesh.scale.x;
-                mesh.scale.set(0.01, 0.01, 0.01);
-                mesh.material.transparent = true;
-                mesh.material.opacity = 0;
-                
-                setTimeout(() => {
-                    const startTime = Date.now();
-                    const duration = 400;
+            // Animate only visible nodes appearing (unless skipped)
+            if (!skipAnimation) {
+                const visibleNodes = Array.from(nodes.values()).filter(mesh => mesh.visible);
+                visibleNodes.forEach((mesh, i) => {
+                    const targetScale = mesh.scale.x;
+                    mesh.scale.set(0.01, 0.01, 0.01);
+                    mesh.material.transparent = true;
+                    mesh.material.opacity = 0;
                     
-                    function animateAppear() {
-                        const progress = Math.min((Date.now() - startTime) / duration, 1);
-                        const ease = 1 - Math.pow(1 - progress, 3);
+                    setTimeout(() => {
+                        const startTime = Date.now();
+                        const duration = 600;
                         
-                        mesh.scale.setScalar(0.01 + ease * (targetScale - 0.01));
-                        mesh.material.opacity = ease;
-                        
-                        if (progress < 1) {
-                            requestAnimationFrame(animateAppear);
-                        } else {
-                            mesh.material.transparent = false;
-                            mesh.material.opacity = 1;
+                        function animateAppear() {
+                            const progress = Math.min((Date.now() - startTime) / duration, 1);
+                            const ease = 1 - Math.pow(1 - progress, 3);
+                            
+                            mesh.scale.setScalar(0.01 + ease * (targetScale - 0.01));
+                            mesh.material.opacity = ease;
+                            
+                            if (progress < 1) {
+                                requestAnimationFrame(animateAppear);
+                            } else {
+                                mesh.material.transparent = false;
+                                mesh.material.opacity = 1;
+                            }
                         }
-                    }
-                    animateAppear();
-                }, i * 50);
-            });
+                        animateAppear();
+                    }, i * 75);
+                });
+            }
             
             keyboardFocusNode = nodes.get(contextId);
         }
@@ -3058,17 +3361,22 @@
             const material = createMatteMaterial(data.color);
             
             const mesh = new THREE.Mesh(geometry, material);
-            mesh.position.set(...data.position);
+            
+            // Check if this node is expanded - if so, use expanded position
+            const isExpanded = store.expandedNodes.has(data.id);
+            const startPos = isExpanded && data.expandedPosition ? data.expandedPosition : data.position;
+            
+            mesh.position.set(...startPos);
             mesh.castShadow = true;
             mesh.receiveShadow = true;
             mesh.userData = { ...data, parent };
-            mesh.userData.isExpanded = false;
+            mesh.userData.isExpanded = isExpanded;
             
             // Spring physics properties
             mesh.userData.spring = {
                 // Position spring
                 velocity: new THREE.Vector3(0, 0, 0),
-                target: new THREE.Vector3(...data.position),
+                target: new THREE.Vector3(...startPos),
                 // Scale spring
                 scaleVelocity: 0,
                 scaleTarget: 1,
@@ -3078,7 +3386,7 @@
                 rotTarget: new THREE.Vector3(0, 0, 0),
                 // Idle floating
                 floatOffset: Math.random() * Math.PI * 2,
-                floatSpeed: 0.3 + Math.random() * 0.2
+                floatSpeed: 0.2 + Math.random() * 0.15
             };
             
             scene.add(mesh);
@@ -3091,15 +3399,22 @@
             document.body.appendChild(label);
             mesh.userData.labelDiv = label;
             
-            if (data.level >= 2) {
+            // Check if parent is expanded - if so, this child should be visible
+            const parentIsExpanded = parent && store.expandedNodes.has(parent.id);
+            
+            if (data.level >= 2 && !parentIsExpanded) {
                 mesh.visible = false;
                 mesh.userData.collapsed = true;
+            } else if (data.level >= 2 && parentIsExpanded) {
+                mesh.visible = true;
+                mesh.userData.collapsed = false;
+                mesh.userData.labelDiv.style.display = 'block';
             }
             
             if (parent) {
                 const connection = createConnection(parent, data);
                 mesh.userData.connectionLine = connection;
-                if (data.level >= 2) connection.visible = false;
+                if (data.level >= 2 && !parentIsExpanded) connection.visible = false;
             }
             
             nodes.set(data.id, mesh);
@@ -3113,10 +3428,10 @@
         
         // Spring physics constants
         const SPRING = {
-            stiffness: 0.15,      // How snappy (0.1 = soft, 0.3 = snappy)
-            damping: 0.75,        // How quickly it settles (0.5 = bouncy, 0.9 = stiff)
-            scaleStiffness: 0.2,
-            scaleDamping: 0.7
+            stiffness: 0.10,      // How snappy (0.1 = soft, 0.3 = snappy)
+            damping: 0.80,        // How quickly it settles (0.5 = bouncy, 0.9 = stiff)
+            scaleStiffness: 0.15,
+            scaleDamping: 0.75
         };
         
         // Apply spring physics to a node
@@ -3193,6 +3508,29 @@
             return line;
         }
         
+        function createConnectionFromMeshes(parentMesh, childMesh) {
+            const parentPos = parentMesh.position.clone();
+            const childPos = childMesh.position.clone();
+            const dir = new THREE.Vector3().subVectors(childPos, parentPos).normalize();
+            
+            const parentEdge = parentPos.clone().add(dir.clone().multiplyScalar(parentMesh.userData.size || 0.5));
+            const childEdge = childPos.clone().sub(dir.clone().multiplyScalar(childMesh.userData.size || 0.5));
+            
+            const points = [parentEdge, childEdge];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({
+                color: new THREE.Color(childMesh.userData.color),
+                transparent: true,
+                opacity: 0.5
+            });
+            
+            const line = new THREE.Line(geometry, material);
+            scene.add(line);
+            connections.push(line);
+            
+            return line;
+        }
+        
         function updateConnection(childMesh, parentMesh) {
             if (!childMesh.userData.connectionLine || !parentMesh) return;
             
@@ -3217,6 +3555,14 @@
             if (!parentData.children || parentData.children.length === 0) return;
             
             parentMesh.userData.isExpanded = !parentMesh.userData.isExpanded;
+            
+            // Sync with store
+            if (parentMesh.userData.isExpanded) {
+                store.expandedNodes.add(parentData.id);
+            } else {
+                store.expandedNodes.delete(parentData.id);
+            }
+            
             const childMeshes = parentData.children.map(c => nodes.get(c.id)).filter(Boolean);
             
             // Bounce the parent node
@@ -3279,7 +3625,7 @@
                             const startPos = parentPos.clone();
                             
                             function animate() {
-                                const progress = Math.min((Date.now() - startTime) / 400, 1);
+                                const progress = Math.min((Date.now() - startTime) / 600, 1);
                                 // Springy ease with overshoot
                                 const ease = progress < 0.7 
                                     ? 1.2 * (1 - Math.pow(1 - progress / 0.7, 3))
@@ -3315,9 +3661,9 @@
                                 }
                             }
                             animate();
-                        }, i * 50);
+                        }, i * 75);
                     });
-                }, parentData.level > 0 ? 120 : 0);
+                }, parentData.level > 0 ? 180 : 0);
                 
                 store.expandedNodes.add(parentData.id);
             } else {
@@ -3329,7 +3675,7 @@
                     const startTime = Date.now();
                     
                     function animate() {
-                        const progress = Math.min((Date.now() - startTime) / 250, 1);
+                        const progress = Math.min((Date.now() - startTime) / 375, 1);
                         const ease = progress * progress;
                         
                         child.position.lerpVectors(startPos, targetPos, ease);
@@ -3372,6 +3718,9 @@
         
         function selectNode(mesh) {
             audio.select();
+            
+            // Track previous node for camera transition
+            const previousSelectedNode = selectedNode;
             
             if (selectedNode && selectedNode !== mesh) {
                 const selectedIsChild = mesh.userData.parent && mesh.userData.parent.id === selectedNode.userData.id;
@@ -3442,7 +3791,13 @@
                 nodePos.z + (mindToNode.length() > 0.1 ? mindToNode.z : 1) * distance
             );
             
-            animateCamera(camera.position.clone(), newCameraPos, controls.target.clone(), nodePos);
+            // Use zoom transition when switching between nodes, regular transition otherwise
+            const wasSwitchingNodes = previousSelectedNode && previousSelectedNode !== mesh;
+            if (wasSwitchingNodes) {
+                animateCameraWithZoom(camera.position.clone(), newCameraPos, controls.target.clone(), nodePos);
+            } else {
+                animateCamera(camera.position.clone(), newCameraPos, controls.target.clone(), nodePos);
+            }
             
             bus.emit('node:selected', { data: mesh.userData });
         }
@@ -3485,7 +3840,7 @@
             bus.emit('node:deselected');
         }
         
-        function animateCamera(fromPos, toPos, fromTarget, toTarget, duration = 600) {
+        function animateCamera(fromPos, toPos, fromTarget, toTarget, duration = 900) {
             const startTime = Date.now();
             function animate() {
                 const progress = Math.min((Date.now() - startTime) / duration, 1);
@@ -3494,6 +3849,51 @@
                 controls.target.lerpVectors(fromTarget, toTarget, ease);
                 controls.update();
                 if (progress < 1) requestAnimationFrame(animate);
+            }
+            animate();
+        }
+        
+        // Camera transition with smooth arc - zooms out then back in
+        function animateCameraWithZoom(fromPos, toPos, fromTarget, toTarget, duration = 1400) {
+            const startTime = Date.now();
+            
+            // Calculate arc parameters
+            const nodeDistance = fromTarget.distanceTo(toTarget);
+            const arcHeight = Math.min(nodeDistance * 0.5, 12) + 4;
+            const arcPullBack = Math.min(nodeDistance * 0.3, 8) + 3;
+            
+            // Get the midpoint between targets for arc center
+            const midTarget = new THREE.Vector3().lerpVectors(fromTarget, toTarget, 0.5);
+            
+            // Direction to pull camera back (away from scene center)
+            const sceneCenter = new THREE.Vector3(0, 0, 0);
+            const pullDir = new THREE.Vector3().subVectors(midTarget, sceneCenter).normalize();
+            if (pullDir.length() < 0.1) pullDir.set(0, 0, 1);
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const t = Math.min(elapsed / duration, 1);
+                
+                // Sine-based easing for ultra smooth motion
+                const ease = 0.5 - 0.5 * Math.cos(t * Math.PI);
+                
+                // Smooth arc using sine curve - peaks at t=0.5
+                const arc = Math.sin(t * Math.PI);
+                
+                // Base interpolation
+                const currentPos = new THREE.Vector3().lerpVectors(fromPos, toPos, ease);
+                const currentTarget = new THREE.Vector3().lerpVectors(fromTarget, toTarget, ease);
+                
+                // Add arc offset - pull back and up
+                currentPos.y += arc * arcHeight;
+                currentPos.x += pullDir.x * arc * arcPullBack;
+                currentPos.z += pullDir.z * arc * arcPullBack;
+                
+                camera.position.copy(currentPos);
+                controls.target.copy(currentTarget);
+                controls.update();
+                
+                if (t < 1) requestAnimationFrame(animate);
             }
             animate();
         }
@@ -3579,7 +3979,7 @@
                 }
             });
             
-            setTimeout(() => selectNode(mesh), 300);
+            setTimeout(() => selectNode(mesh), 450);
         }
         
         // Raycasting
@@ -3592,6 +3992,15 @@
         let lastHoveredNode = null;
         
         function onMouseMove(e) {
+            // Handle node dragging
+            if (isNodeDragMode) {
+                updateNodeDrag(e);
+                return;
+            }
+            
+            // Check if hovering over radial menu
+            const isOverRadialMenu = e.target.closest('#radial-menu');
+            
             mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
             
@@ -3617,19 +4026,44 @@
                 }
                 lastHoveredNode = hoveredNode;
                 renderer.domElement.style.cursor = 'pointer';
-            } else {
+                
+                // Show radial menu toggle
+                updateRadialMenuOnHover(hoveredNode);
+                
+                // If hovering over the node that has the menu open, cancel any hide timeout
+                if (radialMenuNode === hoveredNode && radialMenuHideTimeout) {
+                    clearTimeout(radialMenuHideTimeout);
+                    radialMenuHideTimeout = null;
+                }
+            } else if (!isOverRadialMenu) {
+                // Only process if not hovering over radial menu
                 if (hoveredNode && hoveredNode !== selectedNode && hoveredNode.userData.spring) {
                     hoveredNode.userData.spring.scaleTarget = 1;
                 }
                 hoveredNode = null;
                 lastHoveredNode = null;
                 renderer.domElement.style.cursor = 'default';
+                
+                // Hide radial menu after a short delay (to allow reaching the toggle)
+                if (!radialMenuHideTimeout) {
+                    radialMenuHideTimeout = setTimeout(() => {
+                        hideRadialMenu();
+                        radialMenuHideTimeout = null;
+                    }, 150);
+                }
             }
         }
         
         function onMouseDown(e) {
             mouseDownPos = { x: e.clientX, y: e.clientY };
             isDragging = false;
+            
+            // Hide radial menu when starting to drag camera
+            if (!e.target.closest('#radial-menu')) {
+                if (radialMenuOpen) {
+                    hideRadialMenu();
+                }
+            }
         }
         
         function onMouseMoveForDrag(e) {
@@ -3638,8 +4072,20 @@
         }
         
         function onClick(e) {
+            // Finish node drag on click
+            if (isNodeDragMode) {
+                finishNodeDrag();
+                return;
+            }
+            
             if (isDragging) return;
-            if (e.target.closest('#controls-panel, #info-panel, #search-container, #help-panel, #quick-capture, #theme-toggle, #depth-indicator, .modal-overlay')) return;
+            if (e.target.closest('#controls-panel, #info-panel, #search-container, #help-panel, #quick-capture, #theme-toggle, #depth-indicator, .modal-overlay, #radial-menu')) return;
+            
+            // Hide radial menu if clicking elsewhere
+            if (radialMenuOpen) {
+                hideRadialMenu();
+                return;
+            }
             
             mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -3656,7 +4102,8 @@
         }
         
         function onDoubleClick(e) {
-            if (e.target.closest('#controls-panel, #info-panel, #search-container, #help-panel, #quick-capture, #theme-toggle, #depth-indicator, .modal-overlay')) return;
+            if (isNodeDragMode) return;
+            if (e.target.closest('#controls-panel, #info-panel, #search-container, #help-panel, #quick-capture, #theme-toggle, #depth-indicator, .modal-overlay, #radial-menu')) return;
             
             mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -3710,6 +4157,494 @@
             }
         }
         
+        // ─── Radial Node Menu ───
+        const radialMenu = document.getElementById('radial-menu');
+        const radialToggle = document.getElementById('radial-toggle');
+        const radialItems = document.querySelectorAll('.radial-item');
+        const radialHitArea = document.getElementById('radial-hit-area');
+        const radialNodeHitArea = document.getElementById('radial-node-hit-area');
+        let radialMenuNode = null;
+        let radialMenuOpen = false;
+        let isNodeDragMode = false;
+        let nodeDragTarget = null;
+        let nodeDragPlane = null;
+        let nodeDragOffset = new THREE.Vector3();
+        
+        let radialMenuHideTimeout = null;
+        let radialAnimating = false; // Track if expand/collapse animation is in progress
+        
+        function showRadialMenu(mesh, screenPos) {
+            // Clear any pending hide
+            if (radialMenuHideTimeout) {
+                clearTimeout(radialMenuHideTimeout);
+                radialMenuHideTimeout = null;
+            }
+            
+            radialMenuNode = mesh;
+            
+            // Calculate node screen radius and position toggle on outer edge
+            const nodeWorldRadius = mesh.geometry.parameters.radius * mesh.scale.x;
+            const dist = camera.position.distanceTo(mesh.position);
+            const fov = camera.fov * (Math.PI / 180);
+            const screenHeight = window.innerHeight;
+            const nodeScreenRadius = (nodeWorldRadius / (2 * dist * Math.tan(fov / 2))) * screenHeight;
+            
+            // Position menu at node center
+            radialMenu.style.left = screenPos.x + 'px';
+            radialMenu.style.top = screenPos.y + 'px';
+            
+            // Position toggle on right edge of node
+            const toggleOffset = Math.max(nodeScreenRadius + 20, 40);
+            const buttonScale = Math.min(1.8, Math.max(1, nodeScreenRadius / 50));
+            radialToggle.style.left = toggleOffset + 'px';
+            radialToggle.style.top = '0px';
+            radialToggle.style.transform = `translate(-50%, -50%) scale(${buttonScale})`;
+            
+            // Set up node edge hit area (ring around node)
+            const baseButtonSize = 26;
+            const scaledButtonSize = baseButtonSize * buttonScale;
+            const ringWidth = scaledButtonSize + 16;
+            const outerRadius = nodeScreenRadius + ringWidth;
+            radialNodeHitArea.style.width = outerRadius * 2 + 'px';
+            radialNodeHitArea.style.height = outerRadius * 2 + 'px';
+            radialNodeHitArea.style.left = '0px';
+            radialNodeHitArea.style.top = '0px';
+            radialNodeHitArea.style.borderWidth = ringWidth + 'px';
+            
+            radialMenu.classList.add('visible');
+            
+            // Update dive button visibility based on children
+            const diveBtn = document.querySelector('.radial-item[data-action="dive"]');
+            if (diveBtn) {
+                diveBtn.style.display = mesh.userData.children?.length > 0 ? 'flex' : 'none';
+            }
+            
+            // Hide delete for root node
+            const deleteBtn = document.querySelector('.radial-item[data-action="delete"]');
+            if (deleteBtn) {
+                deleteBtn.style.display = mesh.userData.level === 0 ? 'none' : 'flex';
+            }
+        }
+        
+        function hideRadialMenu() {
+            radialMenu.classList.remove('visible');
+            radialMenuOpen = false;
+            radialAnimating = false;
+            radialToggle.classList.remove('active');
+            radialToggle.style.transform = 'translate(-50%, -50%)';
+            radialHitArea.classList.remove('active');
+            radialNodeHitArea.classList.remove('active');
+            radialItems.forEach(item => {
+                item.classList.remove('visible');
+                item.style.opacity = '';
+                item.style.transform = '';
+            });
+            radialMenuNode = null;
+        }
+        
+        function toggleRadialItems() {
+            radialMenuOpen = !radialMenuOpen;
+            radialToggle.classList.toggle('active', radialMenuOpen);
+            radialAnimating = true;
+            
+            if (radialMenuOpen && radialMenuNode) {
+                // Calculate actual screen size of the node
+                const nodeWorldRadius = radialMenuNode.geometry.parameters.radius * radialMenuNode.scale.x;
+                const dist = camera.position.distanceTo(radialMenuNode.position);
+                const fov = camera.fov * (Math.PI / 180);
+                const screenHeight = window.innerHeight;
+                const nodeScreenRadius = (nodeWorldRadius / (2 * dist * Math.tan(fov / 2))) * screenHeight;
+                
+                // Items orbit along the node's edge
+                const itemRadius = Math.max(nodeScreenRadius + 20, 40);
+                
+                // Scale button size based on zoom (1x to 1.8x)
+                const buttonScale = Math.min(1.8, Math.max(1, nodeScreenRadius / 50));
+                
+                // Calculate spacing to prevent overlap - minimum spacing based on button size
+                const baseButtonSize = 26;
+                const scaledButtonSize = baseButtonSize * buttonScale;
+                const minSpacing = scaledButtonSize + 8; // Button size plus gap
+                
+                // Get visible items
+                const visibleItems = Array.from(radialItems).filter(item => item.style.display !== 'none');
+                
+                // Calculate arc per item based on minimum spacing
+                const arcPerItem = minSpacing / itemRadius;
+                const duration = 400;
+                const startTime = Date.now();
+                
+                // Calculate the total arc angle for all items
+                const totalArcAngle = visibleItems.length * arcPerItem;
+                
+                // Set up hit area to cover the menu arc region - needs to cover where items actually are
+                // Items fan counterclockwise (negative angles) so we need upper-left AND upper-right coverage
+                const hitAreaRadius = itemRadius + scaledButtonSize + 10;
+                const hitAreaWidth = hitAreaRadius * 2; // Full width to cover left and right
+                const hitAreaHeight = hitAreaRadius;
+                radialHitArea.style.width = hitAreaWidth + 'px';
+                radialHitArea.style.height = hitAreaHeight + 'px';
+                radialHitArea.style.left = -hitAreaRadius + 'px'; // Center it
+                radialHitArea.style.top = -hitAreaHeight + 'px';
+                radialHitArea.style.clipPath = '';
+                radialHitArea.classList.add('active');
+                
+                // Activate node edge hit area (ring around node)
+                radialNodeHitArea.classList.add('active');
+                
+                // Make all items visible but at toggle position
+                visibleItems.forEach(item => {
+                    item.style.left = itemRadius + 'px';
+                    item.style.top = '0px';
+                    item.classList.add('visible');
+                });
+                
+                function animateExpand() {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // Recalculate radius each frame to stay attached during zoom
+                    const currentDist = camera.position.distanceTo(radialMenuNode.position);
+                    const currentNodeScreenRadius = (nodeWorldRadius / (2 * currentDist * Math.tan(fov / 2))) * screenHeight;
+                    const currentItemRadius = Math.max(currentNodeScreenRadius + 20, 40);
+                    const currentButtonScale = Math.min(1.8, Math.max(1, currentNodeScreenRadius / 50));
+                    const currentScaledButtonSize = baseButtonSize * currentButtonScale;
+                    const currentMinSpacing = currentScaledButtonSize + 8;
+                    const currentArcPerItem = currentMinSpacing / currentItemRadius;
+                    
+                    // Ease out cubic for smooth deceleration
+                    const ease = 1 - Math.pow(1 - progress, 3);
+                    
+                    visibleItems.forEach((item, i) => {
+                        // Each item has a slightly delayed start based on its index
+                        const itemDelay = i * 0.12; // staggered delay
+                        const itemProgress = Math.max(0, Math.min(1, (ease - itemDelay) / (1 - itemDelay * 0.5)));
+                        
+                        // Smooth easing for each item
+                        const itemEase = 1 - Math.pow(1 - itemProgress, 2);
+                        
+                        const targetAngle = -(i + 1) * currentArcPerItem;
+                        const currentAngle = targetAngle * itemEase;
+                        
+                        const x = Math.cos(currentAngle) * currentItemRadius;
+                        const y = Math.sin(currentAngle) * currentItemRadius;
+                        
+                        // Scale from 0.5 to final scale
+                        const scale = (0.5 + 0.5 * itemEase) * currentButtonScale;
+                        
+                        item.style.left = x + 'px';
+                        item.style.top = y + 'px';
+                        item.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                        item.style.opacity = itemEase;
+                    });
+                    
+                    // Also update toggle position and scale
+                    radialToggle.style.left = currentItemRadius + 'px';
+                    radialToggle.style.transform = `translate(-50%, -50%) scale(${currentButtonScale})`;
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animateExpand);
+                    } else {
+                        // Ensure final state
+                        const finalDist = camera.position.distanceTo(radialMenuNode.position);
+                        const finalNodeScreenRadius = (nodeWorldRadius / (2 * finalDist * Math.tan(fov / 2))) * screenHeight;
+                        const finalButtonScale = Math.min(1.8, Math.max(1, finalNodeScreenRadius / 50));
+                        visibleItems.forEach(item => {
+                            item.style.transform = `translate(-50%, -50%) scale(${finalButtonScale})`;
+                            item.style.opacity = '1';
+                        });
+                        radialAnimating = false;
+                    }
+                }
+                
+                animateExpand();
+            } else {
+                // Collapse animation
+                const visibleItems = Array.from(radialItems).filter(item => item.classList.contains('visible'));
+                
+                // Hide hit areas immediately
+                radialHitArea.classList.remove('active');
+                radialNodeHitArea.classList.remove('active');
+                
+                if (!radialMenuNode || visibleItems.length === 0) {
+                    visibleItems.forEach(item => item.classList.remove('visible'));
+                    radialAnimating = false;
+                    return;
+                }
+                
+                const nodeWorldRadius = radialMenuNode.geometry.parameters.radius * radialMenuNode.scale.x;
+                const fov = camera.fov * (Math.PI / 180);
+                const screenHeight = window.innerHeight;
+                
+                const duration = 250;
+                const startTime = Date.now();
+                const startPositions = visibleItems.map(item => ({
+                    x: parseFloat(item.style.left) || 0,
+                    y: parseFloat(item.style.top) || 0
+                }));
+                
+                function animateCollapse() {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const ease = progress * progress; // Ease in
+                    
+                    // Recalculate radius each frame
+                    const currentDist = camera.position.distanceTo(radialMenuNode.position);
+                    const currentNodeScreenRadius = (nodeWorldRadius / (2 * currentDist * Math.tan(fov / 2))) * screenHeight;
+                    const currentItemRadius = Math.max(currentNodeScreenRadius + 20, 40);
+                    const currentButtonScale = Math.min(1.8, Math.max(1, currentNodeScreenRadius / 50));
+                    
+                    visibleItems.forEach((item, i) => {
+                        const start = startPositions[i];
+                        const x = start.x + (currentItemRadius - start.x) * ease;
+                        const y = start.y + (0 - start.y) * ease;
+                        const scale = currentButtonScale * (1 - 0.5 * ease);
+                        
+                        item.style.left = x + 'px';
+                        item.style.top = y + 'px';
+                        item.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                        item.style.opacity = 1 - ease;
+                    });
+                    
+                    // Update toggle position
+                    radialToggle.style.left = currentItemRadius + 'px';
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animateCollapse);
+                    } else {
+                        visibleItems.forEach(item => {
+                            item.classList.remove('visible');
+                            item.style.opacity = '';
+                            item.style.transform = '';
+                        });
+                        radialToggle.style.transform = 'translate(-50%, -50%)';
+                        radialAnimating = false;
+                    }
+                }
+                
+                animateCollapse();
+            }
+        }
+        
+        function handleRadialAction(action) {
+            if (!radialMenuNode) return;
+            
+            // Save reference before menu is hidden
+            const targetNode = radialMenuNode;
+            
+            switch (action) {
+                case 'add':
+                    selectNode(targetNode);
+                    setTimeout(() => bus.emit('action:new'), 100);
+                    break;
+                case 'dive':
+                    if (targetNode.userData.children?.length > 0) {
+                        diveIntoNode(targetNode);
+                    }
+                    break;
+                case 'edit':
+                    selectNode(targetNode);
+                    setTimeout(() => {
+                        const nameInput = document.getElementById('node-name');
+                        if (nameInput) {
+                            nameInput.focus();
+                            nameInput.select();
+                        }
+                    }, 100);
+                    break;
+                case 'move':
+                    startNodeDrag(targetNode);
+                    break;
+                // delete is now handled directly in click handler
+            }
+            hideRadialMenu();
+        }
+        
+        function startNodeDrag(mesh) {
+            if (mesh.userData.level === 0) {
+                app.showToast('Cannot move the root node', 'error');
+                return;
+            }
+            
+            // Save snapshot before drag
+            store.saveSnapshot('Move node position');
+            
+            isNodeDragMode = true;
+            nodeDragTarget = mesh;
+            renderer.domElement.classList.add('drag-mode-active');
+            mesh.material.opacity = 0.7;
+            mesh.material.transparent = true;
+            
+            // Create invisible drag plane at node height
+            nodeDragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -mesh.position.y);
+            
+            app.showToast('Drag to move • Click to place', 'success');
+        }
+        
+        function updateNodeDrag(e) {
+            if (!isNodeDragMode || !nodeDragTarget) return;
+            
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            
+            const intersection = new THREE.Vector3();
+            if (raycaster.ray.intersectPlane(nodeDragPlane, intersection)) {
+                nodeDragTarget.position.x = intersection.x;
+                nodeDragTarget.position.z = intersection.z;
+                
+                // Update spring target
+                if (nodeDragTarget.userData.spring) {
+                    nodeDragTarget.userData.spring.target.copy(nodeDragTarget.position);
+                }
+                
+                // Update connections
+                updateConnection(nodeDragTarget, nodes.get(nodeDragTarget.userData.parent?.id));
+                
+                // Update children connections if expanded
+                if (nodeDragTarget.userData.isExpanded && nodeDragTarget.userData.children) {
+                    nodeDragTarget.userData.children.forEach(childData => {
+                        const childMesh = nodes.get(childData.id);
+                        if (childMesh) {
+                            updateConnection(childMesh, nodeDragTarget);
+                        }
+                    });
+                }
+            }
+        }
+        
+        function finishNodeDrag() {
+            if (!isNodeDragMode || !nodeDragTarget) return;
+            
+            isNodeDragMode = false;
+            renderer.domElement.classList.remove('drag-mode-active');
+            
+            // Restore material
+            nodeDragTarget.material.opacity = 1;
+            nodeDragTarget.material.transparent = false;
+            
+            // Save new position to data
+            const nodeData = store.findNode(nodeDragTarget.userData.id);
+            if (nodeData) {
+                nodeData.customPosition = {
+                    x: nodeDragTarget.position.x,
+                    y: nodeDragTarget.position.y,
+                    z: nodeDragTarget.position.z
+                };
+                store.save();
+            }
+            
+            // Update base and expanded positions
+            nodeDragTarget.userData.basePosition = [
+                nodeDragTarget.position.x,
+                nodeDragTarget.position.y,
+                nodeDragTarget.position.z
+            ];
+            nodeDragTarget.userData.expandedPosition = [
+                nodeDragTarget.position.x,
+                nodeDragTarget.position.y,
+                nodeDragTarget.position.z
+            ];
+            
+            bounceNode(nodeDragTarget, 0.15);
+            app.showToast('Node positioned', 'success');
+            
+            nodeDragTarget = null;
+            nodeDragPlane = null;
+        }
+        
+        // Radial menu event listeners
+        radialToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleRadialItems();
+        });
+        
+        // Expand menu when hovering over toggle
+        radialToggle.addEventListener('mouseenter', (e) => {
+            if (radialMenuHideTimeout) {
+                clearTimeout(radialMenuHideTimeout);
+                radialMenuHideTimeout = null;
+            }
+            if (!radialMenuOpen && !radialAnimating) {
+                toggleRadialItems();
+            }
+        });
+        
+        // Keep menu alive when hovering over it
+        radialMenu.addEventListener('mouseenter', () => {
+            if (radialMenuHideTimeout) {
+                clearTimeout(radialMenuHideTimeout);
+                radialMenuHideTimeout = null;
+            }
+        });
+        
+        // Hide menu when leaving it (with delay, but check if over node)
+        radialMenu.addEventListener('mouseleave', (e) => {
+            if (!radialMenuHideTimeout) {
+                radialMenuHideTimeout = setTimeout(() => {
+                    // Check if mouse is over the node
+                    if (radialMenuNode && hoveredNode === radialMenuNode) {
+                        // Still over the node, don't hide
+                        radialMenuHideTimeout = null;
+                        return;
+                    }
+                    hideRadialMenu();
+                    radialMenuHideTimeout = null;
+                }, 200);
+            }
+        });
+        
+        radialItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                const action = item.dataset.action;
+                if (action === 'delete' && radialMenuNode) {
+                    // Handle delete directly here to avoid any timing issues
+                    const targetNode = radialMenuNode;
+                    const nodeId = targetNode.userData.id;
+                    const nodeLabel = targetNode.userData.label;
+                    const nodeLevel = targetNode.userData.level;
+                    
+                    if (nodeLevel === 0 || nodeId === store.data.id) {
+                        app.showToast('Cannot delete root node', 'error');
+                        return;
+                    }
+                    
+                    hideRadialMenu();
+                    
+                    if (confirm(`Delete "${nodeLabel}" and all its children?`)) {
+                        if (store.deleteNode(nodeId)) {
+                            app.showToast(`Deleted "${nodeLabel}"`, 'success');
+                            bus.emit('ui:deselect');
+                        }
+                    }
+                } else {
+                    handleRadialAction(action);
+                }
+            });
+        });
+        
+        // Update radial menu position on hover
+        function updateRadialMenuOnHover(mesh) {
+            // If hovering a different node than the one with open menu, close it
+            if (radialMenuOpen && radialMenuNode && radialMenuNode !== mesh) {
+                hideRadialMenu();
+            }
+            
+            if (radialMenuOpen || radialAnimating) return; // Don't move if menu is open or animating
+            
+            const pos = mesh.position.clone();
+            pos.project(camera);
+            
+            const screenX = (pos.x * 0.5 + 0.5) * window.innerWidth;
+            const screenY = (-pos.y * 0.5 + 0.5) * window.innerHeight;
+            
+            // Position at center of node
+            showRadialMenu(mesh, { x: screenX, y: screenY });
+        }
+
         // Event listeners
         window.addEventListener('mousedown', onMouseDown);
         window.addEventListener('mousemove', onMouseMove);
@@ -3824,7 +4759,111 @@
             }
         });
         bus.on('node:focus', ({ id }) => focusNode(id));
-        bus.on('node:added', () => rebuildSceneAtContext(currentContextId));
+        bus.on('node:added', ({ parent, node }) => {
+            // Store current positions of all visible nodes before rebuild
+            const savedPositions = new Map();
+            const savedExpanded = new Map();
+            nodes.forEach((mesh, id) => {
+                if (mesh.visible) {
+                    savedPositions.set(id, mesh.position.clone());
+                    savedExpanded.set(id, mesh.userData.isExpanded);
+                }
+            });
+            
+            // Ensure parent is expanded
+            store.expandedNodes.add(parent.id);
+            
+            // Rebuild the scene without animation
+            rebuildSceneAtContext(currentContextId, true);
+            
+            // After rebuild, restore positions for existing nodes (no animation)
+            // and animate only the new node
+            setTimeout(() => {
+                nodes.forEach((mesh, id) => {
+                    if (id === node.id) {
+                        // This is the new node - it should animate from parent
+                        const parentMesh = nodes.get(parent.id);
+                        if (parentMesh && mesh.visible) {
+                            const targetPos = mesh.position.clone();
+                            mesh.position.copy(parentMesh.position);
+                            mesh.scale.set(0.01, 0.01, 0.01);
+                            mesh.material.transparent = true;
+                            mesh.material.opacity = 0;
+                            if (mesh.userData.connectionLine) {
+                                mesh.userData.connectionLine.visible = false;
+                            }
+                            mesh.userData.labelDiv.style.display = 'none';
+                            
+                            const startPos = parentMesh.position.clone();
+                            const startTime = Date.now();
+                            const duration = 600;
+                            
+                            function animateNew() {
+                                const progress = Math.min((Date.now() - startTime) / duration, 1);
+                                const ease = 1 - Math.pow(1 - progress, 3);
+                                
+                                mesh.position.lerpVectors(startPos, targetPos, ease);
+                                mesh.scale.setScalar(0.01 + ease * 0.99);
+                                mesh.material.opacity = ease;
+                                
+                                if (progress > 0.2 && mesh.userData.connectionLine) {
+                                    mesh.userData.connectionLine.visible = true;
+                                    updateConnection(mesh, parentMesh);
+                                }
+                                
+                                if (progress < 1) {
+                                    requestAnimationFrame(animateNew);
+                                } else {
+                                    mesh.material.transparent = false;
+                                    mesh.material.opacity = 1;
+                                    mesh.userData.labelDiv.style.display = 'block';
+                                    if (mesh.userData.spring) {
+                                        mesh.userData.spring.target.copy(targetPos);
+                                    }
+                                    bounceNode(mesh, 0.15);
+                                    selectNode(mesh);
+                                }
+                            }
+                            animateNew();
+                        }
+                    } else if (savedPositions.has(id)) {
+                        // Existing node - keep at current position, animate to new if different
+                        const oldPos = savedPositions.get(id);
+                        const newPos = mesh.position.clone();
+                        
+                        // Set to old position, spring will move it to new
+                        mesh.position.copy(oldPos);
+                        mesh.scale.set(1, 1, 1);
+                        mesh.material.transparent = false;
+                        mesh.material.opacity = 1;
+                        
+                        // Ensure label is visible
+                        if (mesh.userData.labelDiv) {
+                            mesh.userData.labelDiv.style.display = 'block';
+                        }
+                        
+                        if (mesh.userData.spring) {
+                            mesh.userData.spring.target.copy(newPos);
+                        }
+                        
+                        // Restore expanded state
+                        if (savedExpanded.has(id)) {
+                            mesh.userData.isExpanded = savedExpanded.get(id);
+                        }
+                    } else if (mesh.visible) {
+                        // New sibling or newly visible node - just ensure it's properly displayed
+                        mesh.scale.set(1, 1, 1);
+                        mesh.material.transparent = false;
+                        mesh.material.opacity = 1;
+                        if (mesh.userData.labelDiv) {
+                            mesh.userData.labelDiv.style.display = 'block';
+                        }
+                    }
+                });
+                
+                audio.expand();
+            }, 50);
+        });
         bus.on('node:deleted', () => rebuildSceneAtContext(currentContextId));
         bus.on('node:moved', () => rebuildSceneAtContext(currentContextId));
         bus.on('node:reordered', () => rebuildSceneAtContext(currentContextId));
@@ -3844,13 +4883,24 @@
             }
         });
         bus.on('data:reset', () => {
+            store.expandedNodes.clear();
             currentContextId = store.data.id;
             rebuildSceneAtContext(store.data.id);
             updateDepthIndicator();
         });
         bus.on('data:imported', () => {
+            store.expandedNodes.clear();
             currentContextId = store.data.id;
             rebuildSceneAtContext(store.data.id);
+            updateDepthIndicator();
+        });
+        bus.on('data:undone', () => {
+            // Check if current context still exists, otherwise surface to root
+            const contextNode = store.findNode(currentContextId);
+            if (!contextNode) {
+                currentContextId = store.data.id;
+            }
+            rebuildSceneAtContext(currentContextId);
             updateDepthIndicator();
         });
         bus.on('keyboard:navigate', ({ direction }) => navigateKeyboard(direction));
@@ -3914,7 +4964,70 @@
             
             // Gentle rotation for selected node
             if (selectedNode) {
-                selectedNode.rotation.y += 0.005;
+                selectedNode.rotation.y += 0.003;
+            }
+            
+            // Update radial menu position if visible and node is moving
+            if (radialMenuNode && radialMenu.classList.contains('visible')) {
+                const pos = radialMenuNode.position.clone();
+                pos.project(camera);
+                const screenX = (pos.x * 0.5 + 0.5) * window.innerWidth;
+                const screenY = (-pos.y * 0.5 + 0.5) * window.innerHeight;
+                radialMenu.style.left = screenX + 'px';
+                radialMenu.style.top = screenY + 'px';
+                
+                // Only update toggle and item positions when not animating
+                if (!radialAnimating) {
+                    // Calculate node screen radius
+                    const nodeWorldRadius = radialMenuNode.geometry.parameters.radius * radialMenuNode.scale.x;
+                    const dist = camera.position.distanceTo(radialMenuNode.position);
+                    const fov = camera.fov * (Math.PI / 180);
+                    const screenHeight = window.innerHeight;
+                    const nodeScreenRadius = (nodeWorldRadius / (2 * dist * Math.tan(fov / 2))) * screenHeight;
+                    const itemRadius = Math.max(nodeScreenRadius + 20, 40);
+                    
+                    // Scale button size based on zoom (1x to 1.8x)
+                    const buttonScale = Math.min(1.8, Math.max(1, nodeScreenRadius / 50));
+                    
+                    // Calculate spacing to prevent overlap
+                    const baseButtonSize = 26;
+                    const scaledButtonSize = baseButtonSize * buttonScale;
+                    const minSpacing = scaledButtonSize + 8;
+                    const arcPerItem = minSpacing / itemRadius;
+                    
+                    // Update toggle position on right edge
+                    radialToggle.style.left = itemRadius + 'px';
+                    radialToggle.style.top = '0px';
+                    radialToggle.style.transform = `translate(-50%, -50%) scale(${buttonScale})`;
+                    
+                    // Update item positions based on current node screen size
+                    if (radialMenuOpen) {
+                        const visibleItems = Array.from(radialItems).filter(item => item.style.display !== 'none' && item.classList.contains('visible'));
+                        
+                        // Update hit area size - cover full upper half where buttons are
+                        const hitAreaRadius = itemRadius + scaledButtonSize + 10;
+                        const hitAreaWidth = hitAreaRadius * 2;
+                        const hitAreaHeight = hitAreaRadius;
+                        radialHitArea.style.width = hitAreaWidth + 'px';
+                        radialHitArea.style.height = hitAreaHeight + 'px';
+                        radialHitArea.style.left = -hitAreaRadius + 'px';
+                        radialHitArea.style.top = -hitAreaHeight + 'px';
+                        
+                        // Update node edge hit area (ring around node)
+                        const ringWidth = scaledButtonSize + 16;
+                        const outerRadius = nodeScreenRadius + ringWidth;
+                        radialNodeHitArea.style.width = outerRadius * 2 + 'px';
+                        radialNodeHitArea.style.height = outerRadius * 2 + 'px';
+                        radialNodeHitArea.style.borderWidth = ringWidth + 'px';
+                        
+                        visibleItems.forEach((item, i) => {
+                            const angle = -(i + 1) * arcPerItem;
+                            item.style.left = (Math.cos(angle) * itemRadius) + 'px';
+                            item.style.top = (Math.sin(angle) * itemRadius) + 'px';
+                            item.style.transform = `translate(-50%, -50%) scale(${buttonScale})`;
+                        });
+                    }
+                }
             }
             
             // Update labels with occlusion
@@ -3991,7 +5104,7 @@
             console.error('Initialization failed:', error);
             document.getElementById('loading').innerHTML = `
                 <div class="loader">
-                    <div class="loader-text" style="color: #B17457;">Error</div>
+                    <div class="loader-text" style="color: #C9917A;">Error</div>
                     <p style="color: var(--text-muted); font-size: 13px; margin-top: 16px;">
                         ${error.message}<br>Please try refreshing.
                     </p>
