@@ -2929,91 +2929,62 @@
             const targetNode = mesh.userData;
             const targetId = targetNode.id;
             
-            // Trigger tunnel animation
-            tunnelOverlay.classList.remove('surfacing');
-            tunnelOverlay.classList.add('diving');
-            
             // Store start states
             const nodePos = mesh.position.clone();
             const cameraStartPos = camera.position.clone();
             const startTarget = controls.target.clone();
-            const startFOV = camera.fov;
+            
+            const startTime = Date.now();
+            const duration = 800; // Faster, smoother transition
             
             // Calculate direction from camera to node
             const dirToNode = nodePos.clone().sub(cameraStartPos).normalize();
-            
-            const startTime = Date.now();
-            const duration = 1500; // Slowed down for smoother feel
-            
-            // Scale up target node during approach
-            const originalScale = mesh.scale.clone();
             
             function animateDive() {
                 const elapsed = Date.now() - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 
-                // Custom easing: slow start, fast through middle, slow end
-                let ease;
-                if (progress < 0.3) {
-                    // Slow acceleration
-                    ease = (progress / 0.3) * (progress / 0.3) * 0.15;
-                } else if (progress < 0.7) {
-                    // Fast through the middle
-                    const midProgress = (progress - 0.3) / 0.4;
-                    ease = 0.15 + midProgress * 0.7;
-                } else {
-                    // Slow deceleration
-                    const endProgress = (progress - 0.7) / 0.3;
-                    ease = 0.85 + (1 - Math.pow(1 - endProgress, 2)) * 0.15;
-                }
+                // Smooth ease-in-out
+                const ease = progress < 0.5 
+                    ? 2 * progress * progress 
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
                 
-                // Phase 1 (0-40%): Approach the node
-                // Phase 2 (40-60%): Pass through (darkness)
-                // Phase 3 (60-100%): Emerge into new space
+                // Phase 1 (0-60%): Approach and enter the node
+                // Phase 2 (60-100%): Emerge into new space
                 
-                if (progress < 0.4) {
-                    const subProgress = progress / 0.4;
+                if (progress < 0.6) {
+                    const subProgress = progress / 0.6;
                     const subEase = subProgress * subProgress;
                     
-                    // Camera approaches node
-                    const approachTarget = nodePos.clone().add(dirToNode.clone().multiplyScalar(-2));
+                    // Camera smoothly approaches and passes through node
+                    const approachTarget = nodePos.clone().add(dirToNode.clone().multiplyScalar(subEase * 5 - 2));
                     camera.position.lerpVectors(cameraStartPos, approachTarget, subEase);
-                    controls.target.lerpVectors(startTarget, nodePos, subEase);
+                    controls.target.lerpVectors(startTarget, nodePos.clone().add(dirToNode.clone().multiplyScalar(subEase * 3)), subEase);
                     
-                    // Narrow FOV for tunnel effect
-                    camera.fov = startFOV - subEase * 15;
-                    camera.updateProjectionMatrix();
-                    
-                    // Scale up target node
-                    const scale = 1 + subEase * 0.5;
-                    mesh.scale.set(scale, scale, scale);
-                    
-                } else if (progress < 0.6) {
-                    // Through the node - camera very close, FOV narrowest
-                    const subProgress = (progress - 0.4) / 0.2;
-                    
-                    camera.position.copy(nodePos.clone().add(dirToNode.clone().multiplyScalar(-1 + subProgress * 3)));
-                    controls.target.copy(nodePos.clone().add(dirToNode.clone().multiplyScalar(subProgress * 5)));
-                    
-                    camera.fov = startFOV - 15 + subProgress * 5;
-                    camera.updateProjectionMatrix();
+                    // Fade out nodes as we pass through
+                    const fadeProgress = Math.max(0, (subProgress - 0.3) / 0.7);
+                    nodes.forEach((n, id) => {
+                        if (id !== targetNode.id) {
+                            n.material.transparent = true;
+                            n.material.opacity = 1 - fadeProgress;
+                            if (n.userData.labelDiv) n.userData.labelDiv.style.opacity = String(1 - fadeProgress);
+                        }
+                    });
+                    connections.forEach(c => {
+                        c.material.opacity = 0.15 * (1 - fadeProgress);
+                    });
                     
                 } else {
                     // Emerge into new space
                     const subProgress = (progress - 0.6) / 0.4;
                     const subEase = 1 - Math.pow(1 - subProgress, 3);
                     
-                    // Camera settles into new position
-                    const emergeCamStart = nodePos.clone().add(new THREE.Vector3(0, 2, 2));
+                    // Camera settles into standard viewing position
+                    const emergeCamStart = nodePos.clone().add(new THREE.Vector3(0, 3, 5));
                     const finalCamPos = new THREE.Vector3(0, 10, 28);
                     camera.position.lerpVectors(emergeCamStart, finalCamPos, subEase);
                     
-                    const emergeTargetStart = nodePos.clone().add(new THREE.Vector3(0, 0, 5));
-                    controls.target.lerpVectors(emergeTargetStart, new THREE.Vector3(0, 0, 0), subEase);
-                    
-                    // FOV returns to normal
-                    camera.fov = startFOV - 10 + subEase * 10;
-                    camera.updateProjectionMatrix();
+                    controls.target.lerpVectors(nodePos, new THREE.Vector3(0, 0, 0), subEase);
                 }
                 
                 controls.update();
@@ -3022,33 +2993,13 @@
                     requestAnimationFrame(animateDive);
                 } else {
                     // Animation complete - rebuild scene
-                    camera.fov = startFOV;
-                    camera.updateProjectionMatrix();
                     currentContextId = targetId;
                     rebuildSceneAtContext(targetId);
                     isDiving = false;
-                    tunnelOverlay.classList.remove('diving');
                     updateDepthIndicator();
                     bus.emit('node:dived', { id: targetId });
                 }
             }
-            
-            // Fade out non-target nodes with staggered timing
-            const nodeArray = Array.from(nodes.entries());
-            nodeArray.forEach(([id, n], index) => {
-                if (id !== targetNode.id) {
-                    setTimeout(() => {
-                        n.material.transparent = true;
-                        n.material.opacity = 0.1;
-                        if (n.userData.labelDiv) n.userData.labelDiv.style.opacity = '0';
-                    }, index * 20);
-                }
-            });
-            connections.forEach((c, i) => {
-                setTimeout(() => {
-                    c.material.opacity = 0.02;
-                }, i * 22);
-            });
             
             animateDive();
         }
@@ -3064,18 +3015,13 @@
             const parent = store.findParent(currentContextId);
             const targetId = parent ? parent.id : store.data.id;
             
-            // Trigger surface animation
-            tunnelOverlay.classList.remove('diving');
-            tunnelOverlay.classList.add('surfacing');
-            
             const cameraStartPos = camera.position.clone();
             const startTarget = controls.target.clone();
-            const startFOV = camera.fov;
             
             const startTime = Date.now();
-            const duration = 1050;
+            const duration = 700; // Faster, smoother transition
             
-            // Fade out current nodes first
+            // Fade out current nodes
             nodes.forEach(n => {
                 n.material.transparent = true;
             });
@@ -3084,39 +3030,21 @@
                 const elapsed = Date.now() - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 
-                // Ease out cubic
-                const ease = 1 - Math.pow(1 - progress, 3);
+                // Smooth ease-in-out
+                const ease = progress < 0.5 
+                    ? 2 * progress * progress 
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
                 
-                // Phase 1 (0-30%): Pull back and zoom out
-                // Phase 2 (30-100%): Emerge into parent space
+                // Smooth pull back to standard view position
+                camera.position.lerpVectors(cameraStartPos, new THREE.Vector3(0, 10, 28), ease);
+                controls.target.lerpVectors(startTarget, new THREE.Vector3(0, 0, 0), ease);
                 
-                if (progress < 0.3) {
-                    const subProgress = progress / 0.3;
-                    
-                    // Camera pulls back
-                    camera.position.lerpVectors(cameraStartPos, cameraStartPos.clone().add(new THREE.Vector3(0, 5, 10)), subProgress);
-                    
-                    // Widen FOV slightly
-                    camera.fov = startFOV + subProgress * 10;
-                    camera.updateProjectionMatrix();
-                    
-                    // Fade out nodes
+                // Fade out nodes during first half
+                if (progress < 0.5) {
+                    const fadeProgress = progress / 0.5;
                     nodes.forEach(n => {
-                        n.material.opacity = 1 - subProgress * 0.8;
+                        n.material.opacity = 1 - fadeProgress * 0.8;
                     });
-                    
-                } else {
-                    const subProgress = (progress - 0.3) / 0.7;
-                    const subEase = 1 - Math.pow(1 - subProgress, 2);
-                    
-                    // Settle into final position
-                    const midPos = cameraStartPos.clone().add(new THREE.Vector3(0, 5, 10));
-                    camera.position.lerpVectors(midPos, new THREE.Vector3(0, 10, 28), subEase);
-                    controls.target.lerpVectors(startTarget, new THREE.Vector3(0, 0, 0), subEase);
-                    
-                    // FOV returns to normal
-                    camera.fov = startFOV + 10 - subEase * 10;
-                    camera.updateProjectionMatrix();
                 }
                 
                 controls.update();
@@ -3124,12 +3052,9 @@
                 if (progress < 1) {
                     requestAnimationFrame(animateSurface);
                 } else {
-                    camera.fov = startFOV;
-                    camera.updateProjectionMatrix();
                     currentContextId = targetId;
                     rebuildSceneAtContext(targetId);
                     isDiving = false;
-                    tunnelOverlay.classList.remove('surfacing');
                     updateDepthIndicator();
                     bus.emit('node:surfaced', { id: targetId });
                 }
